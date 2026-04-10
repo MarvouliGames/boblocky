@@ -20,6 +20,22 @@ function resizeRendererToDisplaySize(renderer) {
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x202020);
 
+const blockDefinitions = {
+  view: [
+    { name: "Change Color", action: "changeColor" },
+    { name: "Set Size", action: "setSize" },
+    { name: "Reset Camera", action: "resetCamera" }
+  ],
+
+  motion: [
+    { name: "Set Position", action: "setPosition" },
+    { name: "Move X", action: "moveX" },
+    { name: "Move Y", action: "moveY" },
+    { name: "Move Z", action: "moveZ" }
+  ]
+};
+
+
 const camera = new THREE.PerspectiveCamera(
   75,
   canvas.clientWidth / canvas.clientHeight,
@@ -91,25 +107,19 @@ document.querySelectorAll(".block").forEach(block => {
     if (action === "resetCamera") {
       camera.position.set(0, 0, 5);
       camera.lookAt(0, 0, 0);
+      const scriptArea = document.getElementById("script-scroll");
+
+    const scriptBlock = document.createElement("div");
+    scriptBlock.className = "script-block";
+    scriptBlock.textContent = e.target.textContent;
+
+scriptArea.appendChild(scriptBlock);
+
     }
   });
 });
 
-const blockDefinitions = {
-  view: [
-    { name: "Change Color", action: "changeColor" },
-    { name: "Set Size", action: "setSize" },
-    { name: "Add Light", action: "addLight" },
-    { name: "Reset Camera", action: "resetCamera" }
-  ],
 
-  motion: [
-    { name: "Set Position", action: "setPosition" },
-    { name: "Move X", action: "moveX" },
-    { name: "Move Y", action: "moveY" },
-    { name: "Move Z", action: "moveZ" }
-  ]
-};
 
 const blocksContainer = document.getElementById("blocks-container");
 
@@ -174,5 +184,18 @@ blocksContainer.addEventListener("click", e => {
   // etc...
 });
 
+
+
+function loadCategory(category) {
+  blocksContainer.innerHTML = "";
+
+  blockDefinitions[category].forEach(block => {
+    const div = document.createElement("div");
+    div.className = "block";
+    div.textContent = block.name;
+    div.dataset.action = block.action;
+    blocksContainer.appendChild(div);
+  });
+}
 
 
