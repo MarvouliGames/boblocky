@@ -1,9 +1,10 @@
+// =========================
+// Canvas + Renderer
+// =========================
 const canvas = document.getElementById("scene");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-
+renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 
 function resizeRendererToDisplaySize(renderer) {
   const canvas = renderer.domElement;
@@ -16,10 +17,38 @@ function resizeRendererToDisplaySize(renderer) {
   return needResize;
 }
 
-
+// =========================
+// Scene + Camera
+// =========================
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x202020);
 
+const camera = new THREE.PerspectiveCamera(
+  75,
+  canvas.clientWidth / canvas.clientHeight,
+  0.1,
+  1000
+);
+camera.position.set(0, 0, 5);
+camera.lookAt(0, 0, 0);
+
+// =========================
+// Objects
+// =========================
+const cube = new THREE.Mesh(
+  new THREE.BoxGeometry(),
+  new THREE.MeshStandardMaterial({ color: 0x00ff00 })
+);
+cube.name = "cube1"; // IMPORTANT
+scene.add(cube);
+
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 5, 5);
+scene.add(light);
+
+// =========================
+// Block Definitions
+// =========================
 const blockDefinitions = {
   view: [
     { name: "Change Color", action: "changeColor" },
@@ -35,92 +64,34 @@ const blockDefinitions = {
   ]
 };
 
-
-const camera = new THREE.PerspectiveCamera(
-  75,
-  canvas.clientWidth / canvas.clientHeight,
-  0.1,
-  1000
-);
-
-
-
-camera.position.set(0, 0, 5);
-camera.lookAt(0, 0, 0);
-
-const cube = new THREE.Mesh(
-  new THREE.BoxGeometry(),
-  new THREE.MeshStandardMaterial({ color: 0x00ff00 })
-);
-scene.add(cube);
-
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(5, 5, 5);
-scene.add(light);
-
+// =========================
+// Animation Loop
+// =========================
 function animate() {
   requestAnimationFrame(animate);
+
+  if (resizeRendererToDisplaySize(renderer)) {
+    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+    camera.updateProjectionMatrix();
+  }
+
   cube.rotation.y += 0.01;
   renderer.render(scene, camera);
 }
-
 animate();
 
+// =========================
+// Window Resize
+// =========================
 window.addEventListener("resize", () => {
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
   camera.aspect = canvas.clientWidth / canvas.clientHeight;
   camera.updateProjectionMatrix();
 });
 
-document.querySelectorAll(".block").forEach(block => {
-  block.addEventListener("click", () => {
-    const action = block.dataset.action;
-
-    if (action === "addCube") {
-      const cube = new THREE.Mesh(
-        new THREE.BoxGeometry(),
-        new THREE.MeshStandardMaterial({ color: 0x00ff00 })
-      );
-      scene.add(cube);
-    }
-
-    if (action === "addSphere") {
-      const sphere = new THREE.Mesh(
-        new THREE.SphereGeometry(0.5, 32, 32),
-        new THREE.MeshStandardMaterial({ color: 0x0099ff })
-      );
-      scene.add(sphere);
-    }
-
-    if (action === "addDirectionalLight") {
-      const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(5, 5, 5);
-      scene.add(light);
-    }
-
-    if (action === "addPointLight") {
-      const light = new THREE.PointLight(0xffffff, 1, 50);
-      light.position.set(0, 3, 0);
-      scene.add(light);
-    }
-
-    if (action === "resetCamera") {
-      camera.position.set(0, 0, 5);
-      camera.lookAt(0, 0, 0);
-      const scriptArea = document.getElementById("script-scroll");
-
-    const scriptBlock = document.createElement("div");
-    scriptBlock.className = "script-block";
-    scriptBlock.textContent = e.target.textContent;
-
-scriptArea.appendChild(scriptBlock);
-
-    }
-  });
-});
-
-
-
+// =========================
+// Sidebar Category Loading
+// =========================
 const blocksContainer = document.getElementById("blocks-container");
 
 function loadCategory(category) {
@@ -146,6 +117,9 @@ document.querySelectorAll(".category-tab").forEach(tab => {
 // Load default category
 loadCategory("view");
 
+// =========================
+// Sprite Selection
+// =========================
 let selectedSprite = "cube1";
 
 document.querySelectorAll(".sprite-item").forEach(item => {
@@ -156,46 +130,47 @@ document.querySelectorAll(".sprite-item").forEach(item => {
   });
 });
 
+// =========================
+// Script Panel
+// =========================
+const scriptArea = document.getElementById("script-scroll");
+
+// =========================
+// Block Click Actions
+// =========================
 blocksContainer.addEventListener("click", e => {
   if (!e.target.classList.contains("block")) return;
 
   const action = e.target.dataset.action;
+  const mesh = scene.getObjectByName(selectedSprite);
+  if (!mesh) return;
 
+  // Add block to script panel
+  const scriptBlock = document.createElement("div");
+  scriptBlock.className = "script-block";
+  scriptBlock.textContent = e.target.textContent;
+  scriptArea.appendChild(scriptBlock);
+
+  // Execute block action
   if (action === "changeColor") {
-    const mesh = scene.getObjectByName(selectedSprite);
     mesh.material.color.set(Math.random() * 0xffffff);
   }
 
   if (action === "setSize") {
-    const mesh = scene.getObjectByName(selectedSprite);
     mesh.scale.set(2, 2, 2);
   }
 
   if (action === "setPosition") {
-    const mesh = scene.getObjectByName(selectedSprite);
     mesh.position.set(0, 1, 0);
   }
 
-  if (action === "moveX") {
-    const mesh = scene.getObjectByName(selectedSprite);
-    mesh.position.x += 0.5;
+  if (action === "moveX") mesh.position.x += 0.5;
+  if (action === "moveY") mesh.position.y += 0.5;
+  if (action === "moveZ") mesh.position.z += 0.5;
+
+  if (action === "resetCamera") {
+    camera.position.set(0, 0, 5);
+    camera.lookAt(0, 0, 0);
   }
-
-  // etc...
 });
-
-
-
-function loadCategory(category) {
-  blocksContainer.innerHTML = "";
-
-  blockDefinitions[category].forEach(block => {
-    const div = document.createElement("div");
-    div.className = "block";
-    div.textContent = block.name;
-    div.dataset.action = block.action;
-    blocksContainer.appendChild(div);
-  });
-}
-
 
