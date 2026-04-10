@@ -1,6 +1,7 @@
 const canvas = document.getElementById("scene");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 
 const scene = new THREE.Scene();
@@ -13,7 +14,10 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-camera.position.set(3, 3, 3);
+
+
+camera.position.set(0, 0, 5);
+camera.lookAt(0, 0, 0);
 
 const cube = new THREE.Mesh(
   new THREE.BoxGeometry(),
