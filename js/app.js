@@ -8,10 +8,11 @@ scene.background = new THREE.Color(0x202020);
 
 const camera = new THREE.PerspectiveCamera(
   75,
-  window.innerWidth / window.innerHeight,
+  canvas.clientWidth / canvas.clientHeight,
   0.1,
   1000
 );
+
 camera.position.set(3, 3, 3);
 
 const cube = new THREE.Mesh(
