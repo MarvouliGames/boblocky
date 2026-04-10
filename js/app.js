@@ -32,7 +32,11 @@ function animate() {
 animate();
 
 window.addEventListener("resize", () => {
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = window.innerWidth / window.innerHeight;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
   camera.updateProjectionMatrix();
 });
+
