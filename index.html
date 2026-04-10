@@ -66,6 +66,47 @@
 .block:hover {
   background: #3a3a3a;
 }
+#sprite-selector {
+  margin-bottom: 20px;
+}
+
+.sprite-item {
+  background: #2a2a2a;
+  padding: 8px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sprite-item.selected {
+  background: #3a3a3a;
+}
+
+#categories {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.category-tab {
+  padding: 8px 12px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.category-tab.selected {
+  background: #3a3a3a;
+}
+
+#blocks-container .block {
+  background: #2a2a2a;
+  padding: 10px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 
 
 </style>
@@ -73,26 +114,27 @@
 </head>
 <body>
 
-<div id="sidebar">
-  <h2>Blocks</h2>
-
-  <div class="category">
-    <div class="category-title">Shapes</div>
-    <div class="block" data-action="addCube">Add Cube</div>
-    <div class="block" data-action="addSphere">Add Sphere</div>
-  </div>
-
-  <div class="category">
-    <div class="category-title">Lights</div>
-    <div class="block" data-action="addDirectionalLight">Directional Light</div>
-    <div class="block" data-action="addPointLight">Point Light</div>
-  </div>
-
-  <div class="category">
-    <div class="category-title">Camera</div>
-    <div class="block" data-action="resetCamera">Reset Camera</div>
-  </div>
+<div id="sprite-selector">
+  <div class="sprite-item selected" data-sprite="cube1">Cube 1</div>
 </div>
+
+<div id="sidebar">
+
+  <div id="sprite-selector">
+    <div class="sprite-item selected" data-sprite="cube1">Cube 1</div>
+  </div>
+
+  <div id="categories">
+    <div class="category-tab selected" data-category="view">View</div>
+    <div class="category-tab" data-category="motion">Motion</div>
+  </div>
+
+  <div id="blocks-container">
+    <!-- Blocks appear here dynamically -->
+  </div>
+
+</div>
+
 
 
   <canvas id="scene"></canvas>

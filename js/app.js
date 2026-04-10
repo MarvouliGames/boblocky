@@ -95,5 +95,84 @@ document.querySelectorAll(".block").forEach(block => {
   });
 });
 
+const blockDefinitions = {
+  view: [
+    { name: "Change Color", action: "changeColor" },
+    { name: "Set Size", action: "setSize" },
+    { name: "Add Light", action: "addLight" },
+    { name: "Reset Camera", action: "resetCamera" }
+  ],
+
+  motion: [
+    { name: "Set Position", action: "setPosition" },
+    { name: "Move X", action: "moveX" },
+    { name: "Move Y", action: "moveY" },
+    { name: "Move Z", action: "moveZ" }
+  ]
+};
+
+const blocksContainer = document.getElementById("blocks-container");
+
+function loadCategory(category) {
+  blocksContainer.innerHTML = "";
+
+  blockDefinitions[category].forEach(block => {
+    const div = document.createElement("div");
+    div.className = "block";
+    div.textContent = block.name;
+    div.dataset.action = block.action;
+    blocksContainer.appendChild(div);
+  });
+}
+
+document.querySelectorAll(".category-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelector(".category-tab.selected").classList.remove("selected");
+    tab.classList.add("selected");
+    loadCategory(tab.dataset.category);
+  });
+});
+
+// Load default category
+loadCategory("view");
+
+let selectedSprite = "cube1";
+
+document.querySelectorAll(".sprite-item").forEach(item => {
+  item.addEventListener("click", () => {
+    document.querySelector(".sprite-item.selected").classList.remove("selected");
+    item.classList.add("selected");
+    selectedSprite = item.dataset.sprite;
+  });
+});
+
+blocksContainer.addEventListener("click", e => {
+  if (!e.target.classList.contains("block")) return;
+
+  const action = e.target.dataset.action;
+
+  if (action === "changeColor") {
+    const mesh = scene.getObjectByName(selectedSprite);
+    mesh.material.color.set(Math.random() * 0xffffff);
+  }
+
+  if (action === "setSize") {
+    const mesh = scene.getObjectByName(selectedSprite);
+    mesh.scale.set(2, 2, 2);
+  }
+
+  if (action === "setPosition") {
+    const mesh = scene.getObjectByName(selectedSprite);
+    mesh.position.set(0, 1, 0);
+  }
+
+  if (action === "moveX") {
+    const mesh = scene.getObjectByName(selectedSprite);
+    mesh.position.x += 0.5;
+  }
+
+  // etc...
+});
+
 
 
