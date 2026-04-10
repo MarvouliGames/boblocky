@@ -22,39 +22,51 @@
     display: block;
 }
 
-    #sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 220px;
-    height: 100vh;
-    background: #1a1a1a;
-    color: white;
-    padding: 15px;
-    box-sizing: border-box;
-    border-right: 2px solid #333;
-    z-index: 10;
+#sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: #1a1a1a;
+  color: white;
+  padding: 15px;
+  box-sizing: border-box;
+  border-right: 2px solid #333;
+  overflow-y: auto;
+  z-index: 10;
 }
 
-    #sidebar h2 {
-    margin-top: 0;
-    font-size: 20px;
+#sidebar h2 {
+  margin-top: 0;
+  font-size: 22px;
+  margin-bottom: 15px;
 }
 
-    #sidebar button {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    background: #333;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
+.category {
+  margin-bottom: 20px;
 }
 
-    #sidebar button:hover {
-    background: #444;
+.category-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #ccc;
 }
+
+.block {
+  background: #2a2a2a;
+  padding: 10px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.block:hover {
+  background: #3a3a3a;
+}
+
 
 </style>
 
@@ -62,11 +74,26 @@
 <body>
 
 <div id="sidebar">
-  <h2>Editor</h2>
-  <button>Add Cube</button>
-  <button>Add Light</button>
-  <button>Settings</button>
+  <h2>Blocks</h2>
+
+  <div class="category">
+    <div class="category-title">Shapes</div>
+    <div class="block" data-action="addCube">Add Cube</div>
+    <div class="block" data-action="addSphere">Add Sphere</div>
+  </div>
+
+  <div class="category">
+    <div class="category-title">Lights</div>
+    <div class="block" data-action="addDirectionalLight">Directional Light</div>
+    <div class="block" data-action="addPointLight">Point Light</div>
+  </div>
+
+  <div class="category">
+    <div class="category-title">Camera</div>
+    <div class="block" data-action="resetCamera">Reset Camera</div>
+  </div>
 </div>
+
 
   <canvas id="scene"></canvas>
   

@@ -56,5 +56,44 @@ window.addEventListener("resize", () => {
   camera.updateProjectionMatrix();
 });
 
+document.querySelectorAll(".block").forEach(block => {
+  block.addEventListener("click", () => {
+    const action = block.dataset.action;
+
+    if (action === "addCube") {
+      const cube = new THREE.Mesh(
+        new THREE.BoxGeometry(),
+        new THREE.MeshStandardMaterial({ color: 0x00ff00 })
+      );
+      scene.add(cube);
+    }
+
+    if (action === "addSphere") {
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(0.5, 32, 32),
+        new THREE.MeshStandardMaterial({ color: 0x0099ff })
+      );
+      scene.add(sphere);
+    }
+
+    if (action === "addDirectionalLight") {
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(5, 5, 5);
+      scene.add(light);
+    }
+
+    if (action === "addPointLight") {
+      const light = new THREE.PointLight(0xffffff, 1, 50);
+      light.position.set(0, 3, 0);
+      scene.add(light);
+    }
+
+    if (action === "resetCamera") {
+      camera.position.set(0, 0, 5);
+      camera.lookAt(0, 0, 0);
+    }
+  });
+});
+
 
 
