@@ -2,7 +2,7 @@ const canvas = document.getElementById("scene");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
 
 function resizeRendererToDisplaySize(renderer) {
@@ -51,9 +51,10 @@ function animate() {
 animate();
 
 window.addEventListener("resize", () => {
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = window.innerWidth / window.innerHeight;
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  camera.aspect = canvas.clientWidth / canvas.clientHeight;
   camera.updateProjectionMatrix();
 });
+
 
 
