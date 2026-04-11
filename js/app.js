@@ -175,19 +175,13 @@ getScriptContainer("script1");
 setActiveScript("script1");
 
 // =========================
-// Tabs (Guaranteed Working)
+// Tabs (fixed)
 // =========================
-const tabs = document.querySelectorAll(".top-tab");
-
-tabs.forEach(tab => {
+document.querySelectorAll(".top-tab").forEach(tab => {
   tab.addEventListener("click", () => {
-
-    // Switch selected tab
-    const current = document.querySelector(".top-tab.selected");
-    if (current) current.classList.remove("selected");
+    document.querySelector(".top-tab.selected").classList.remove("selected");
     tab.classList.add("selected");
 
-    // Switch views
     const view = tab.dataset.view;
 
     if (view === "preview") {
@@ -199,7 +193,6 @@ tabs.forEach(tab => {
     }
   });
 });
-
 
 // =========================
 // Dragging + Snapping + Delete
@@ -331,61 +324,25 @@ blocksContainer.addEventListener("mousedown", e => {
 // EXECUTION ENGINE
 // =========================
 const actions = {
+
   // =========================
   // CONTROL BLOCKS
   // =========================
 
-  repeat: (sprite, inputs, index, blocks) => {
-    const times = Number(inputs.times) || 1;
-
-    const next = blocks[index + 1];
-    if (!next) return;
-
-    const nextAction = actions[next.dataset.action];
-    if (!nextAction) return;
-
-    const nextInputs = {};
-    next.querySelectorAll("input").forEach(input => {
-      nextInputs[input.dataset.inputName] = input.value;
-    });
-
-    for (let i = 0; i < times; i++) {
-      if (!isRunning) return;
-      nextAction(sprite, nextInputs, index + 1, blocks);
-    }
-  },
-
-  forever: (sprite, inputs, index, blocks) => {
-    const next = blocks[index + 1];
-    if (!next) return;
-
-    const nextAction = actions[next.dataset.action];
-    if (!nextAction) return;
-
-    const nextInputs = {};
-    next.querySelectorAll("input").forEach(input => {
-      nextInputs[input.dataset.inputName] = input.value;
-    });
-
-    let cancelled = false;
-
-    function loop() {
-      if (!isRunning || cancelled) return;
-
-      nextAction(sprite, nextInputs, index + 1, blocks);
-      requestAnimationFrame(loop);
-    }
-
-    loop();
-
-    activeLoopCancels.push(() => cancelled = true);
-  },
-
-  wait: (sprite, inputs, index, blocks) => {
+  wait: (sprite, inputs, index, blocks, resume) => {
     const seconds = Number(inputs.seconds) || 0;
 
     setTimeout(() => {
       if (!isRunning) return;
+      resume();
+    }, seconds * 1000);
+  },
+
+  repeat: (sprite, inputs, index, blocks) => {
+    let times = Number(inputs.times) || 1;
+
+    function runNext() {
+      if (!isRunning || times <= 0) return;
 
       const next = blocks[index + 1];
       if (!next) return;
@@ -398,8 +355,47 @@ const actions = {
         nextInputs[input.dataset.inputName] = input.value;
       });
 
-      nextAction(sprite, nextInputs, index + 1, blocks);
-    }, seconds * 1000);
+      times--;
+
+      if (next.dataset.action === "wait") {
+        nextAction(sprite, nextInputs, index + 1, blocks, runNext);
+      } else {
+        nextAction(sprite, nextInputs, index + 1, blocks);
+        runNext();
+      }
+    }
+
+    runNext();
+  },
+
+  forever: (sprite, inputs, index, blocks) => {
+    let cancelled = false;
+
+    function runNext() {
+      if (!isRunning || cancelled) return;
+
+      const next = blocks[index + 1];
+      if (!next) return;
+
+      const nextAction = actions[next.dataset.action];
+      if (!nextAction) return;
+
+      const nextInputs = {};
+      next.querySelectorAll("input").forEach(input => {
+        nextInputs[input.dataset.inputName] = input.value;
+      });
+
+      if (next.dataset.action === "wait") {
+        nextAction(sprite, nextInputs, index + 1, blocks, runNext);
+      } else {
+        nextAction(sprite, nextInputs, index + 1, blocks);
+        requestAnimationFrame(runNext);
+      }
+    }
+
+    runNext();
+
+    activeLoopCancels.push(() => cancelled = true);
   },
 
   // =========================
@@ -485,11 +481,9 @@ document.getElementById("run-script").addEventListener("click", () => {
 document.getElementById("stop-script").addEventListener("click", () => {
   isRunning = false;
 
-  // Cancel all forever loops
   activeLoopCancels.forEach(cancel => cancel());
   activeLoopCancels = [];
 
-  // Reset cube + camera
   cube.position.set(0, 0, 0);
   cube.scale.set(1, 1, 1);
   camera.position.set(0, 0, 5);
