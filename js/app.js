@@ -94,7 +94,7 @@ function loadCategory(category) {
       input.type = name === "color" ? "color" : "number";
 
       // Default hex for color blocks
-      if (name === "color") input.value = "#ff0000";
+      if (name === "color") input.value = "#00ff00";
 
       div.appendChild(input);
     });
@@ -302,9 +302,11 @@ blocksContainer.addEventListener("mousedown", e => {
   scriptBlock.classList.remove("block");
   scriptBlock.dataset.action = block.dataset.action;
 
-  // Default hex fix for cloned color inputs
-  scriptBlock.querySelectorAll('input[type="color"]').forEach(input => {
-    if (!input.value) input.value = "#ff0000";
+  // Preserve the current input values from the sidebar block,
+  // including color picker state.
+  block.querySelectorAll("input").forEach((input, index) => {
+    const cloneInput = scriptBlock.querySelectorAll("input")[index];
+    if (cloneInput) cloneInput.value = input.value;
   });
 
   scriptContainer.appendChild(scriptBlock);
