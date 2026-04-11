@@ -16,42 +16,6 @@
       font-family: sans-serif;
     }
 
-    /* Top tabs */
-    #top-tabs {
-      position: absolute;
-      top: 0;
-      left: 260px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0 10px;
-      z-index: 20;
-    }
-
-    .top-tab {
-      padding: 6px 12px;
-      background: #2a2a2a;
-      color: #eee;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .top-tab.selected {
-      background: #3a3a3a;
-    }
-
-    /* Canvas */
-    canvas {
-      position: absolute;
-      top: 40px;
-      left: 260px; /* sidebar width */
-      width: calc(100vw - 520px); /* sidebar + script panel */
-      height: calc(100vh - 40px);
-      display: block;
-    }
-
     /* Sidebar */
     #sidebar {
       position: absolute;
@@ -85,12 +49,20 @@
       background: #3a3a3a;
     }
 
-    /* Explorer */
+    /* Explorer (now on the right side) */
     #explorer {
-      margin-bottom: 15px;
-      background: #151515;
-      border-radius: 4px;
-      padding: 8px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 260px;
+      height: 100vh;
+      background: #1a1a1a;
+      color: white;
+      padding: 15px;
+      border-left: 2px solid #333;
+      box-sizing: border-box;
+      overflow-y: auto;
+      z-index: 10;
     }
 
     #explorer-header {
@@ -112,11 +84,6 @@
       padding: 0;
     }
 
-    #script-list {
-      max-height: 120px;
-      overflow-y: auto;
-    }
-
     .script-item {
       background: #222;
       padding: 6px 8px;
@@ -130,23 +97,83 @@
       background: #3a3a3a;
     }
 
-    /* Category tabs */
-    #categories {
+    /* Top tabs */
+    #top-tabs {
+      position: absolute;
+      top: 0;
+      left: 260px;
+      height: 40px;
       display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      z-index: 20;
     }
 
-    .category-tab {
-      padding: 8px 12px;
+    .top-tab {
+      padding: 6px 12px;
       background: #2a2a2a;
+      color: #eee;
       border-radius: 4px;
       cursor: pointer;
       font-size: 14px;
     }
 
-    .category-tab.selected {
+    .top-tab.selected {
       background: #3a3a3a;
+    }
+
+    /* Canvas (Preview mode) */
+    #scene {
+      position: absolute;
+      top: 40px;
+      left: 260px;
+      width: calc(100vw - 520px);
+      height: calc(100vh - 40px);
+      display: block;
+    }
+
+    #scene.fullscreen {
+      width: calc(100vw - 260px);
+    }
+
+    /* Script Workspace (Scripts tab) */
+    #script-workspace {
+      position: absolute;
+      top: 40px;
+      left: 260px;
+      width: calc(100vw - 520px);
+      height: calc(100vh - 40px);
+      background: #181818;
+      overflow-y: auto;
+      padding: 10px;
+      display: none;
+    }
+
+    .script-container {
+      position: relative;
+      min-height: 200px;
+      margin-bottom: 20px;
+      border: 1px dashed #444;
+      border-radius: 4px;
+      padding: 10px;
+    }
+
+    .script-block {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #2a2a2a;
+      padding: 8px;
+      border-radius: 4px;
+      cursor: grab;
+      position: relative;
+      margin: 4px;
+      font-size: 13px;
+    }
+
+    .script-block:active {
+      cursor: grabbing;
     }
 
     /* Blocks in sidebar */
@@ -186,67 +213,6 @@
       height: 22px;
       padding: 0;
     }
-
-    /* Script Panel */
-    #script-panel {
-      position: absolute;
-      top: 40px;
-      right: 0;
-      width: 260px;
-      height: calc(100vh - 40px);
-      background: #1a1a1a;
-      color: white;
-      padding: 10px 15px;
-      box-sizing: border-box;
-      border-left: 2px solid #333;
-      overflow: hidden;
-      z-index: 10;
-    }
-
-    #script-panel.hidden {
-      display: none;
-    }
-
-    #script-panel h2 {
-      margin: 0 0 8px 0;
-      font-size: 16px;
-    }
-
-    #script-scroll {
-      height: calc(100% - 24px);
-      overflow-y: auto;
-      position: relative;
-      padding-right: 10px;
-    }
-
-    .script-container {
-      position: relative;
-      min-height: 200px;
-      margin-bottom: 20px;
-      border: 1px dashed #444;
-      border-radius: 4px;
-    }
-
-    .script-container.hidden {
-      display: none;
-    }
-
-    .script-block {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: #2a2a2a;
-      padding: 8px;
-      border-radius: 4px;
-      cursor: grab;
-      position: relative;
-      margin: 4px;
-      font-size: 13px;
-    }
-
-    .script-block:active {
-      cursor: grabbing;
-    }
   </style>
 </head>
 
@@ -259,25 +225,24 @@
       <div class="sprite-item selected" data-sprite="cube1">Cube 1</div>
     </div>
 
-    <div id="explorer">
-      <div id="explorer-header">
-        <span>Scripts</span>
-        <button id="add-script">+</button>
-      </div>
-      <div id="script-list">
-        <div class="script-item selected" data-script-id="script1">Script 1</div>
-      </div>
-    </div>
-
     <div id="categories">
       <div class="category-tab selected" data-category="view">View</div>
       <div class="category-tab" data-category="motion">Motion</div>
     </div>
 
-    <div id="blocks-container">
-      <!-- Blocks load dynamically -->
-    </div>
+    <div id="blocks-container"></div>
 
+  </div>
+
+  <!-- RIGHT EXPLORER -->
+  <div id="explorer">
+    <div id="explorer-header">
+      <span>Scripts</span>
+      <button id="add-script">+</button>
+    </div>
+    <div id="script-list">
+      <div class="script-item selected" data-script-id="script1">Script 1</div>
+    </div>
   </div>
 
   <!-- TOP TABS -->
@@ -286,18 +251,14 @@
     <div class="top-tab" data-view="scripts">Scripts</div>
   </div>
 
-  <!-- CENTER CANVAS -->
+  <!-- CANVAS (Preview mode) -->
   <canvas id="scene"></canvas>
 
-  <!-- RIGHT SCRIPT PANEL -->
-  <div id="script-panel">
-    <h2>Script Editor</h2>
-    <div id="script-scroll">
-      <div class="script-container" data-script-id="script1"></div>
-    </div>
+  <!-- SCRIPT WORKSPACE (Scripts tab) -->
+  <div id="script-workspace">
+    <div class="script-container" data-script-id="script1"></div>
   </div>
 
-  <!-- JS -->
   <script src="js/three.min.js"></script>
   <script src="js/app.js"></script>
 

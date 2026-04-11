@@ -47,7 +47,7 @@ light.position.set(5, 5, 5);
 scene.add(light);
 
 // =========================
-// Block Definitions (with inputs)
+// Block Definitions
 // =========================
 const blockDefinitions = {
   view: [
@@ -122,13 +122,11 @@ function loadCategory(category) {
 document.querySelectorAll(".category-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelector(".category-tab.selected").classList.remove("selected");
-    tab.addEventListener("click", () => {});
     tab.classList.add("selected");
     loadCategory(tab.dataset.category);
   });
 });
 
-// Load default category
 loadCategory("view");
 
 // =========================
@@ -145,9 +143,9 @@ document.querySelectorAll(".sprite-item").forEach(item => {
 });
 
 // =========================
-// Script Explorer + Containers
+// Script Explorer
 // =========================
-const scriptScroll = document.getElementById("script-scroll");
+const scriptWorkspace = document.getElementById("script-workspace");
 const scriptList = document.getElementById("script-list");
 const addScriptBtn = document.getElementById("add-script");
 
@@ -155,12 +153,12 @@ let currentScriptId = "script1";
 let scriptCounter = 1;
 
 function getScriptContainer(id) {
-  let container = scriptScroll.querySelector(`.script-container[data-script-id="${id}"]`);
+  let container = scriptWorkspace.querySelector(`.script-container[data-script-id="${id}"]`);
   if (!container) {
     container = document.createElement("div");
     container.className = "script-container";
     container.dataset.scriptId = id;
-    scriptScroll.appendChild(container);
+    scriptWorkspace.appendChild(container);
   }
   return container;
 }
@@ -172,8 +170,8 @@ function setActiveScript(id) {
     item.classList.toggle("selected", item.dataset.scriptId === id);
   });
 
-  scriptScroll.querySelectorAll(".script-container").forEach(container => {
-    container.classList.toggle("hidden", container.dataset.scriptId !== id);
+  scriptWorkspace.querySelectorAll(".script-container").forEach(container => {
+    container.style.display = container.dataset.scriptId === id ? "block" : "none";
   });
 }
 
@@ -197,12 +195,12 @@ addScriptBtn.addEventListener("click", () => {
   setActiveScript(id);
 });
 
-// ensure default script container exists
+// Ensure default script exists
 getScriptContainer("script1");
 setActiveScript("script1");
 
 // =========================
-// Script Panel + Dragging
+// Draggable Script Blocks
 // =========================
 function makeDraggable(block) {
   let offsetX = 0;
@@ -210,9 +208,7 @@ function makeDraggable(block) {
   let isDragging = false;
 
   block.querySelectorAll("input").forEach(input => {
-    input.addEventListener("mousedown", e => {
-      e.stopPropagation();
-    });
+    input.addEventListener("mousedown", e => e.stopPropagation());
   });
 
   block.addEventListener("mousedown", e => {
@@ -242,7 +238,7 @@ function makeDraggable(block) {
 }
 
 // =========================
-// Sidebar Block -> Script Block (add only)
+// Sidebar Block → Script Block
 // =========================
 blocksContainer.addEventListener("click", e => {
   const block = e.target.closest(".block");
@@ -259,9 +255,9 @@ blocksContainer.addEventListener("click", e => {
 });
 
 // =========================
-// Run Script Block on click (in script editor)
+// Run Script Block on Click
 // =========================
-scriptScroll.addEventListener("click", e => {
+scriptWorkspace.addEventListener("click", e => {
   const scriptBlock = e.target.closest(".script-block");
   if (!scriptBlock) return;
 
@@ -298,10 +294,9 @@ scriptScroll.addEventListener("click", e => {
 });
 
 // =========================
-// Top Tabs: Preview vs Scripts
+// Tabs: Preview vs Scripts
 // =========================
 const topTabs = document.querySelectorAll(".top-tab");
-const scriptPanel = document.getElementById("script-panel");
 
 topTabs.forEach(tab => {
   tab.addEventListener("click", () => {
@@ -309,10 +304,13 @@ topTabs.forEach(tab => {
     tab.classList.add("selected");
 
     const view = tab.dataset.view;
+
     if (view === "preview") {
-      scriptPanel.classList.add("hidden");
+      scriptWorkspace.style.display = "none";
+      canvas.classList.add("fullscreen");
     } else {
-      scriptPanel.classList.remove("hidden");
+      scriptWorkspace.style.display = "block";
+      canvas.classList.remove("fullscreen");
     }
   });
 });
