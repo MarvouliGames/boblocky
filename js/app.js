@@ -39,7 +39,7 @@ const cube = new THREE.Mesh(
   new THREE.BoxGeometry(),
   new THREE.MeshStandardMaterial({ color: 0x00ff00 })
 );
-cube.name = "cube1"; 
+cube.name = "cube1";
 scene.add(cube);
 
 const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -155,6 +155,13 @@ function makeDraggable(block) {
   let offsetY = 0;
   let isDragging = false;
 
+  // Prevent dragging when clicking inputs
+  block.querySelectorAll("input").forEach(input => {
+    input.addEventListener("mousedown", e => {
+      e.stopPropagation();
+    });
+  });
+
   block.addEventListener("mousedown", (e) => {
     isDragging = true;
     block.style.position = "absolute";
@@ -186,19 +193,23 @@ blocksContainer.addEventListener("click", e => {
   const action = block.dataset.action;
   const mesh = scene.getObjectByName(selectedSprite);
 
-  // Collect inputs
+  // Clone block INCLUDING inputs
+  const scriptBlock = block.cloneNode(true);
+  scriptBlock.classList.add("script-block");
+  scriptBlock.classList.remove("block");
+
+  // Make draggable
+  makeDraggable(scriptBlock);
+
+  // Add to script panel
+  scriptArea.appendChild(scriptBlock);
+
+  // Collect inputs from script block
   const inputs = {};
-  block.querySelectorAll(".block-input").forEach(input => {
+  scriptBlock.querySelectorAll(".block-input").forEach(input => {
     const name = input.dataset.inputName;
     inputs[name] = input.type === "number" ? Number(input.value) : input.value;
   });
-
-  // Add to script panel
-  const scriptBlock = document.createElement("div");
-  scriptBlock.className = "script-block";
-  scriptBlock.textContent = block.textContent;
-  scriptArea.appendChild(scriptBlock);
-  makeDraggable(scriptBlock);
 
   // Execute actions
   if (action === "setPosition") {

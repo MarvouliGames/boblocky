@@ -4,209 +4,183 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Boblocky</title>
+
   <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #202020;
+      font-family: sans-serif;
+    }
 
+    /* Canvas */
     canvas {
-    position: absolute;
-    top: 0;
-    left: 220px; /* sidebar width */
-    width: calc(100vw - 220px);
-    height: 100vh;
-    display: block;
-}
+      position: absolute;
+      top: 0;
+      left: 260px; /* sidebar width */
+      width: calc(100vw - 520px); /* sidebar + script panel */
+      height: 100vh;
+      display: block;
+    }
 
-#sidebar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 260px;
-  height: 100vh;
-  background: #1a1a1a;
-  color: white;
-  padding: 15px;
-  box-sizing: border-box;
-  border-right: 2px solid #333;
-  overflow-y: auto;
-  z-index: 10;
-}
+    /* Sidebar */
+    #sidebar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: #1a1a1a;
+      color: white;
+      padding: 15px;
+      box-sizing: border-box;
+      border-right: 2px solid #333;
+      overflow-y: auto;
+      z-index: 10;
+    }
 
-#sidebar h2 {
-  margin-top: 0;
-  font-size: 22px;
-  margin-bottom: 15px;
-}
+    /* Sprite selector */
+    #sprite-selector {
+      margin-bottom: 20px;
+    }
 
-.category {
-  margin-bottom: 20px;
-}
+    .sprite-item {
+      background: #2a2a2a;
+      padding: 8px;
+      margin-bottom: 6px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
-.category-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #ccc;
-}
+    .sprite-item.selected {
+      background: #3a3a3a;
+    }
 
-.block {
-  background: #2a2a2a;
-  padding: 10px;
-  margin-bottom: 6px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
+    /* Category tabs */
+    #categories {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
 
-.block:hover {
-  background: #3a3a3a;
-}
-#sprite-selector {
-  margin-bottom: 20px;
-}
+    .category-tab {
+      padding: 8px 12px;
+      background: #2a2a2a;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
-.sprite-item {
-  background: #2a2a2a;
-  padding: 8px;
-  margin-bottom: 6px;
-  border-radius: 4px;
-  cursor: pointer;
-}
+    .category-tab.selected {
+      background: #3a3a3a;
+    }
 
-.sprite-item.selected {
-  background: #3a3a3a;
-}
+    /* Blocks in sidebar */
+    .block {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #2a2a2a;
+      padding: 10px;
+      margin-bottom: 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
 
-#categories {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
+    .block:hover {
+      background: #3a3a3a;
+    }
 
-.category-tab {
-  padding: 8px 12px;
-  background: #2a2a2a;
-  border-radius: 4px;
-  cursor: pointer;
-}
+    .block-input {
+      width: 50px;
+      background: #444;
+      border: none;
+      color: white;
+      padding: 4px;
+      border-radius: 4px;
+    }
 
-.category-tab.selected {
-  background: #3a3a3a;
-}
+    .block-input[type="color"] {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+    }
 
-#blocks-container .block {
-  background: #2a2a2a;
-  padding: 10px;
-  margin-bottom: 6px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.script-block {
-  background: #2a2a2a;
-  padding: 10px;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  cursor: grab;
-  position: relative;
-}
+    /* Script Panel */
+    #script-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 260px;
+      height: 100vh;
+      background: #1a1a1a;
+      color: white;
+      padding: 15px;
+      box-sizing: border-box;
+      border-left: 2px solid #333;
+      overflow: hidden;
+      z-index: 10;
+    }
 
-#script-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 260px;
-  height: 100vh;
-  background: #1a1a1a;
-  color: white;
-  padding: 15px;
-  box-sizing: border-box;
-  border-left: 2px solid #333;
-  overflow: hidden;
-  z-index: 10;
-}
+    #script-scroll {
+      height: calc(100vh - 50px);
+      overflow-y: auto;
+      padding-right: 10px;
+      position: relative; /* required for draggable blocks */
+    }
 
-#script-scroll {
-  height: calc(100vh - 50px);
-  overflow-y: auto;
-  padding-right: 10px;
-  position: relative; /* ⭐ required for drag positioning */
-}
+    .script-block {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #2a2a2a;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: grab;
+      position: absolute;
+    }
 
-.script-block {
-  background: #2a2a2a;
-  padding: 10px;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  cursor: grab;
-  position: relative;
-}
-
-.script-block:active {
-  cursor: grabbing;
-}
-.block-input {
-  width: 50px;
-  margin-left: 6px;
-  background: #444;
-  border: none;
-  color: white;
-  padding: 4px;
-  border-radius: 4px;
-}
-
-.block-input[type="color"] {
-  width: 40px;
-  padding: 0;
-  height: 25px;
-}
-.block {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-
-
-</style>
-
+    .script-block:active {
+      cursor: grabbing;
+    }
+  </style>
 </head>
+
 <body>
 
-<div id="sidebar">
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar">
 
-  <div id="sprite-selector">
-    <div class="sprite-item selected" data-sprite="cube1">Cube 1</div>
+    <div id="sprite-selector">
+      <div class="sprite-item selected" data-sprite="cube1">Cube 1</div>
+    </div>
+
+    <div id="categories">
+      <div class="category-tab selected" data-category="view">View</div>
+      <div class="category-tab" data-category="motion">Motion</div>
+    </div>
+
+    <div id="blocks-container">
+      <!-- Blocks load dynamically -->
+    </div>
+
   </div>
 
-  <div id="categories">
-    <div class="category-tab selected" data-category="view">View</div>
-    <div class="category-tab" data-category="motion">Motion</div>
+  <!-- CENTER CANVAS -->
+  <canvas id="scene"></canvas>
+
+  <!-- RIGHT SCRIPT PANEL -->
+  <div id="script-panel">
+    <h2>Scripts</h2>
+    <div id="script-scroll"></div>
   </div>
 
-  <div id="blocks-container">
-    <!-- Blocks appear here dynamically -->
-  </div>
-
-</div>
-
-<canvas id="scene"></canvas>
-
-<div id="script-panel">
-  <h2>Scripts</h2>
-  <div id="script-scroll">
-    <!-- Draggable script blocks will appear here -->
-  </div>
-</div>
-
-
-<script src="js/three.min.js"></script>
-<script src="js/app.js"></script>
+  <!-- JS -->
+  <script src="js/three.min.js"></script>
+  <script src="js/app.js"></script>
 
 </body>
-
 </html>
