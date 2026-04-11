@@ -39,7 +39,7 @@ const cube = new THREE.Mesh(
   new THREE.BoxGeometry(),
   new THREE.MeshStandardMaterial({ color: 0x00ff00 })
 );
-cube.name = "cube1"; // IMPORTANT
+cube.name = "cube1"; 
 scene.add(cube);
 
 const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -47,7 +47,7 @@ light.position.set(5, 5, 5);
 scene.add(light);
 
 // =========================
-// Block Definitions
+// Block Definitions (with inputs)
 // =========================
 const blockDefinitions = {
   view: [
@@ -63,7 +63,6 @@ const blockDefinitions = {
     { name: "Move Z", action: "moveZ", inputs: ["amount"] }
   ]
 };
-
 
 // =========================
 // Animation Loop
@@ -94,6 +93,7 @@ window.addEventListener("resize", () => {
 // Sidebar Category Loading
 // =========================
 const blocksContainer = document.getElementById("blocks-container");
+
 function loadCategory(category) {
   blocksContainer.innerHTML = "";
 
@@ -102,7 +102,7 @@ function loadCategory(category) {
     div.className = "block";
     div.dataset.action = block.action;
 
-    // Block title
+    // Title
     const title = document.createElement("span");
     title.textContent = block.name;
     div.appendChild(title);
@@ -120,7 +120,6 @@ function loadCategory(category) {
     blocksContainer.appendChild(div);
   });
 }
-
 
 document.querySelectorAll(".category-tab").forEach(tab => {
   tab.addEventListener("click", () => {
@@ -147,7 +146,7 @@ document.querySelectorAll(".sprite-item").forEach(item => {
 });
 
 // =========================
-// Script Panel
+// Script Panel + Dragging
 // =========================
 const scriptArea = document.getElementById("script-scroll");
 
@@ -177,14 +176,13 @@ function makeDraggable(block) {
   });
 }
 
-
 // =========================
 // Block Click Actions
 // =========================
 blocksContainer.addEventListener("click", e => {
-  if (!e.target.classList.contains("block")) return;
+  const block = e.target.closest(".block");
+  if (!block) return;
 
-  const block = e.target;
   const action = block.dataset.action;
   const mesh = scene.getObjectByName(selectedSprite);
 
@@ -224,6 +222,3 @@ blocksContainer.addEventListener("click", e => {
     camera.lookAt(0, 0, 0);
   }
 });
-
-
-
