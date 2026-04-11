@@ -217,6 +217,7 @@ function makeDraggable(block) {
     const parentRect = block.parentElement.getBoundingClientRect();
 
     block.style.position = "absolute";
+    block.style.width = "calc(100% - 20px)";
     block.style.left = rect.left - parentRect.left + "px";
     block.style.top = rect.top - parentRect.top + "px";
     block.style.zIndex = 1000;
@@ -230,10 +231,66 @@ function makeDraggable(block) {
     const parentRect = block.parentElement.getBoundingClientRect();
     block.style.left = e.pageX - parentRect.left - offsetX + "px";
     block.style.top = e.pageY - parentRect.top - offsetY + "px";
+    const overlapsSidebar =
+  blockRect.right > sidebarRect.left &&
+  blockRect.left < sidebarRect.right &&
+  blockRect.bottom > sidebarRect.top &&
+  blockRect.top < sidebarRect.bottom;
+
+block.style.background = overlapsSidebar ? "#802020" : "#2a2a2a";
+
   });
 
   document.addEventListener("mouseup", () => {
     isDragging = false;
+    const sidebar = document.getElementById("sidebar");
+
+document.addEventListener("mouseup", () => {
+  if (!isDragging) return;
+  isDragging = false;
+
+  const blockRect = block.getBoundingClientRect();
+  const sidebarRect = sidebar.getBoundingClientRect();
+
+  const overlapsSidebar =
+    blockRect.right > sidebarRect.left &&
+    blockRect.left < sidebarRect.right &&
+    blockRect.bottom > sidebarRect.top &&
+    blockRect.top < sidebarRect.bottom;
+
+  if (overlapsSidebar) {
+    block.remove(); // delete block
+    const parent = block.parentElement;
+const siblings = [...parent.querySelectorAll(".script-block")].filter(b => b !== block);
+
+let insertBefore = null;
+let blockCenter = block.getBoundingClientRect().top + block.offsetHeight / 2;
+
+for (let sib of siblings) {
+  const sibRect = sib.getBoundingClientRect();
+  const sibCenter = sibRect.top + sibRect.height / 2;
+
+  if (blockCenter < sibCenter) {
+    insertBefore = sib;
+    break;
+  }
+}
+
+// Reset block to normal flow
+block.style.position = "relative";
+block.style.left = "0px";
+block.style.top = "0px";
+block.style.zIndex = "1";
+
+if (insertBefore) {
+  parent.insertBefore(block, insertBefore);
+} else {
+  parent.appendChild(block);
+}
+
+  }
+});
+
   });
 }
 

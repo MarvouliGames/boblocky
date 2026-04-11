@@ -160,17 +160,17 @@
     }
 
     .script-block {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: #2a2a2a;
-      padding: 8px;
-      border-radius: 4px;
-      cursor: grab;
-      position: relative;
-      margin: 4px;
-      font-size: 13px;
-    }
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #2a2a2a;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: grab;
+    position: relative; /* not absolute by default */
+    margin: 4px 0;
+  }
+
 
     .script-block:active {
       cursor: grabbing;
