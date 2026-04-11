@@ -16,13 +16,39 @@
       font-family: sans-serif;
     }
 
+    /* Top tabs */
+    #top-tabs {
+      position: absolute;
+      top: 0;
+      left: 260px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      z-index: 20;
+    }
+
+    .top-tab {
+      padding: 6px 12px;
+      background: #2a2a2a;
+      color: #eee;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .top-tab.selected {
+      background: #3a3a3a;
+    }
+
     /* Canvas */
     canvas {
       position: absolute;
-      top: 0;
+      top: 40px;
       left: 260px; /* sidebar width */
       width: calc(100vw - 520px); /* sidebar + script panel */
-      height: 100vh;
+      height: calc(100vh - 40px);
       display: block;
     }
 
@@ -44,7 +70,7 @@
 
     /* Sprite selector */
     #sprite-selector {
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .sprite-item {
@@ -59,11 +85,56 @@
       background: #3a3a3a;
     }
 
+    /* Explorer */
+    #explorer {
+      margin-bottom: 15px;
+      background: #151515;
+      border-radius: 4px;
+      padding: 8px;
+    }
+
+    #explorer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    #explorer-header button {
+      background: #2a2a2a;
+      border: none;
+      color: #eee;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+    }
+
+    #script-list {
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .script-item {
+      background: #222;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .script-item.selected {
+      background: #3a3a3a;
+    }
+
     /* Category tabs */
     #categories {
       display: flex;
       gap: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
 
     .category-tab {
@@ -71,6 +142,7 @@
       background: #2a2a2a;
       border-radius: 4px;
       cursor: pointer;
+      font-size: 14px;
     }
 
     .category-tab.selected {
@@ -78,6 +150,10 @@
     }
 
     /* Blocks in sidebar */
+    #blocks-container {
+      margin-top: 10px;
+    }
+
     .block {
       display: flex;
       align-items: center;
@@ -88,6 +164,7 @@
       border-radius: 4px;
       cursor: pointer;
       transition: background 0.15s;
+      font-size: 13px;
     }
 
     .block:hover {
@@ -101,35 +178,57 @@
       color: white;
       padding: 4px;
       border-radius: 4px;
+      font-size: 12px;
     }
 
     .block-input[type="color"] {
       width: 40px;
-      height: 25px;
+      height: 22px;
       padding: 0;
     }
 
     /* Script Panel */
     #script-panel {
       position: absolute;
-      top: 0;
+      top: 40px;
       right: 0;
       width: 260px;
-      height: 100vh;
+      height: calc(100vh - 40px);
       background: #1a1a1a;
       color: white;
-      padding: 15px;
+      padding: 10px 15px;
       box-sizing: border-box;
       border-left: 2px solid #333;
       overflow: hidden;
       z-index: 10;
     }
 
+    #script-panel.hidden {
+      display: none;
+    }
+
+    #script-panel h2 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+    }
+
     #script-scroll {
-      height: calc(100vh - 50px);
+      height: calc(100% - 24px);
       overflow-y: auto;
+      position: relative;
       padding-right: 10px;
-      position: relative; /* required for draggable blocks */
+    }
+
+    .script-container {
+      position: relative;
+      min-height: 200px;
+      margin-bottom: 20px;
+      border: 1px dashed #444;
+      border-radius: 4px;
+    }
+
+    .script-container.hidden {
+      display: none;
     }
 
     .script-block {
@@ -137,10 +236,12 @@
       align-items: center;
       gap: 6px;
       background: #2a2a2a;
-      padding: 10px;
+      padding: 8px;
       border-radius: 4px;
       cursor: grab;
-      position: absolute;
+      position: relative;
+      margin: 4px;
+      font-size: 13px;
     }
 
     .script-block:active {
@@ -158,6 +259,16 @@
       <div class="sprite-item selected" data-sprite="cube1">Cube 1</div>
     </div>
 
+    <div id="explorer">
+      <div id="explorer-header">
+        <span>Scripts</span>
+        <button id="add-script">+</button>
+      </div>
+      <div id="script-list">
+        <div class="script-item selected" data-script-id="script1">Script 1</div>
+      </div>
+    </div>
+
     <div id="categories">
       <div class="category-tab selected" data-category="view">View</div>
       <div class="category-tab" data-category="motion">Motion</div>
@@ -169,13 +280,21 @@
 
   </div>
 
+  <!-- TOP TABS -->
+  <div id="top-tabs">
+    <div class="top-tab selected" data-view="preview">Preview</div>
+    <div class="top-tab" data-view="scripts">Scripts</div>
+  </div>
+
   <!-- CENTER CANVAS -->
   <canvas id="scene"></canvas>
 
   <!-- RIGHT SCRIPT PANEL -->
   <div id="script-panel">
-    <h2>Scripts</h2>
-    <div id="script-scroll"></div>
+    <h2>Script Editor</h2>
+    <div id="script-scroll">
+      <div class="script-container" data-script-id="script1"></div>
+    </div>
   </div>
 
   <!-- JS -->

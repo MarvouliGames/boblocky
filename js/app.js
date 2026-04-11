@@ -102,12 +102,10 @@ function loadCategory(category) {
     div.className = "block";
     div.dataset.action = block.action;
 
-    // Title
     const title = document.createElement("span");
     title.textContent = block.name;
     div.appendChild(title);
 
-    // Inputs
     block.inputs.forEach(inputName => {
       const input = document.createElement("input");
       input.type = inputName === "color" ? "color" : "number";
@@ -124,6 +122,7 @@ function loadCategory(category) {
 document.querySelectorAll(".category-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelector(".category-tab.selected").classList.remove("selected");
+    tab.addEventListener("click", () => {});
     tab.classList.add("selected");
     loadCategory(tab.dataset.category);
   });
@@ -146,36 +145,95 @@ document.querySelectorAll(".sprite-item").forEach(item => {
 });
 
 // =========================
+// Script Explorer + Containers
+// =========================
+const scriptScroll = document.getElementById("script-scroll");
+const scriptList = document.getElementById("script-list");
+const addScriptBtn = document.getElementById("add-script");
+
+let currentScriptId = "script1";
+let scriptCounter = 1;
+
+function getScriptContainer(id) {
+  let container = scriptScroll.querySelector(`.script-container[data-script-id="${id}"]`);
+  if (!container) {
+    container = document.createElement("div");
+    container.className = "script-container";
+    container.dataset.scriptId = id;
+    scriptScroll.appendChild(container);
+  }
+  return container;
+}
+
+function setActiveScript(id) {
+  currentScriptId = id;
+
+  scriptList.querySelectorAll(".script-item").forEach(item => {
+    item.classList.toggle("selected", item.dataset.scriptId === id);
+  });
+
+  scriptScroll.querySelectorAll(".script-container").forEach(container => {
+    container.classList.toggle("hidden", container.dataset.scriptId !== id);
+  });
+}
+
+scriptList.addEventListener("click", e => {
+  const item = e.target.closest(".script-item");
+  if (!item) return;
+  setActiveScript(item.dataset.scriptId);
+});
+
+addScriptBtn.addEventListener("click", () => {
+  scriptCounter++;
+  const id = `script${scriptCounter}`;
+
+  const item = document.createElement("div");
+  item.className = "script-item";
+  item.dataset.scriptId = id;
+  item.textContent = `Script ${scriptCounter}`;
+  scriptList.appendChild(item);
+
+  getScriptContainer(id);
+  setActiveScript(id);
+});
+
+// ensure default script container exists
+getScriptContainer("script1");
+setActiveScript("script1");
+
+// =========================
 // Script Panel + Dragging
 // =========================
-const scriptArea = document.getElementById("script-scroll");
-
 function makeDraggable(block) {
   let offsetX = 0;
   let offsetY = 0;
   let isDragging = false;
 
-  // Prevent dragging when clicking inputs
   block.querySelectorAll("input").forEach(input => {
     input.addEventListener("mousedown", e => {
       e.stopPropagation();
     });
   });
 
-  block.addEventListener("mousedown", (e) => {
+  block.addEventListener("mousedown", e => {
     isDragging = true;
+    const rect = block.getBoundingClientRect();
+    const parentRect = block.parentElement.getBoundingClientRect();
+
     block.style.position = "absolute";
+    block.style.left = rect.left - parentRect.left + "px";
+    block.style.top = rect.top - parentRect.top + "px";
     block.style.zIndex = 1000;
 
     offsetX = e.offsetX;
     offsetY = e.offsetY;
   });
 
-  document.addEventListener("mousemove", (e) => {
+  document.addEventListener("mousemove", e => {
     if (!isDragging) return;
-
-    block.style.left = e.pageX - offsetX + "px";
-    block.style.top = e.pageY - offsetY + "px";
+    const parentRect = block.parentElement.getBoundingClientRect();
+    block.style.left = e.pageX - parentRect.left - offsetX + "px";
+    block.style.top = e.pageY - parentRect.top - offsetY + "px";
   });
 
   document.addEventListener("mouseup", () => {
@@ -184,34 +242,39 @@ function makeDraggable(block) {
 }
 
 // =========================
-// Block Click Actions
+// Sidebar Block -> Script Block (add only)
 // =========================
 blocksContainer.addEventListener("click", e => {
   const block = e.target.closest(".block");
   if (!block) return;
 
-  const action = block.dataset.action;
-  const mesh = scene.getObjectByName(selectedSprite);
+  const scriptContainer = getScriptContainer(currentScriptId);
 
-  // Clone block INCLUDING inputs
   const scriptBlock = block.cloneNode(true);
   scriptBlock.classList.add("script-block");
   scriptBlock.classList.remove("block");
 
-  // Make draggable
+  scriptContainer.appendChild(scriptBlock);
   makeDraggable(scriptBlock);
+});
 
-  // Add to script panel
-  scriptArea.appendChild(scriptBlock);
+// =========================
+// Run Script Block on click (in script editor)
+// =========================
+scriptScroll.addEventListener("click", e => {
+  const scriptBlock = e.target.closest(".script-block");
+  if (!scriptBlock) return;
 
-  // Collect inputs from script block
+  const action = scriptBlock.dataset.action;
+  const mesh = scene.getObjectByName(selectedSprite);
+  if (!mesh) return;
+
   const inputs = {};
   scriptBlock.querySelectorAll(".block-input").forEach(input => {
     const name = input.dataset.inputName;
     inputs[name] = input.type === "number" ? Number(input.value) : input.value;
   });
 
-  // Execute actions
   if (action === "setPosition") {
     mesh.position.set(inputs.x || 0, inputs.y || 0, inputs.z || 0);
   }
@@ -232,4 +295,24 @@ blocksContainer.addEventListener("click", e => {
     camera.position.set(0, 0, 5);
     camera.lookAt(0, 0, 0);
   }
+});
+
+// =========================
+// Top Tabs: Preview vs Scripts
+// =========================
+const topTabs = document.querySelectorAll(".top-tab");
+const scriptPanel = document.getElementById("script-panel");
+
+topTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelector(".top-tab.selected").classList.remove("selected");
+    tab.classList.add("selected");
+
+    const view = tab.dataset.view;
+    if (view === "preview") {
+      scriptPanel.classList.add("hidden");
+    } else {
+      scriptPanel.classList.remove("hidden");
+    }
+  });
 });
