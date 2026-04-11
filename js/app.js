@@ -61,8 +61,12 @@ animate();
 // Sidebar Blocks
 // =========================
 const blockDefinitions = {
+  control: [
+    { name: "Repeat", action: "repeat", inputs: ["times"] },
+    { name: "Forever", action: "forever", inputs: [] }
+  ],
+
   view: [
-    { name: "Change Color", action: "changeColor", inputs: ["color"] },
     { name: "Set Size", action: "setSize", inputs: ["x", "y", "z"] },
     { name: "Reset Camera", action: "resetCamera", inputs: [] }
   ],
@@ -97,6 +101,18 @@ function loadCategory(category) {
       if (name === "color") input.value = "#00ff00";
 
       div.appendChild(input);
+      if (block.action === "repeat" || block.action === "forever") {
+      div.classList.add("loop-block");
+
+      const inner = document.createElement("div");
+      inner.className = "loop-inner";
+      inner.style.marginLeft = "20px";
+      inner.style.borderLeft = "2px solid #555";
+      inner.style.paddingLeft = "10px";
+
+      div.appendChild(inner);
+}
+
     });
 
     blocksContainer.appendChild(div);
@@ -255,7 +271,21 @@ function makeDraggable(block) {
       return;
     }
 
-    const parent = block.parentElement;
+    let parent = block.parentElement;
+
+// If dropped inside a loop-inner, use that as parent
+document.querySelectorAll(".loop-inner").forEach(inner => {
+  const rect = inner.getBoundingClientRect();
+  if (
+    e.pageX > rect.left &&
+    e.pageX < rect.right &&
+    e.pageY > rect.top &&
+    e.pageY < rect.bottom
+  ) {
+    parent = inner;
+  }
+});
+
     const siblings = [...parent.querySelectorAll(".script-block")].filter(b => b !== block);
 
     let insertBefore = null;
@@ -365,29 +395,52 @@ const actions = {
 
   moveZ: (sprite, inputs) => {
     sprite.position.z += Number(inputs.amount) || 0;
+  },
+  repeat: (sprite, inputs, innerBlocks) => {
+  const times = Number(inputs.times) || 1;
+  for (let i = 0; i < times; i++) {
+    runBlockList(innerBlocks, sprite);
   }
+},
+
+forever: (sprite, inputs, innerBlocks) => {
+  function loop() {
+    runBlockList(innerBlocks, sprite);
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 };
 
-function runScript(scriptId) {
-  const container = getScriptContainer(scriptId);
-  const blocks = [...container.querySelectorAll(".script-block")];
-
-  const spriteName = document.querySelector(".sprite-item.selected").dataset.sprite;
-  const sprite = scene.getObjectByName(spriteName);
-
+function runBlockList(blocks, sprite) {
   blocks.forEach(block => {
     const actionName = block.dataset.action;
     const action = actions[actionName];
     if (!action) return;
 
     const inputs = {};
-    block.querySelectorAll("input").forEach(input => {
+    block.querySelectorAll(":scope > input").forEach(input => {
       inputs[input.dataset.inputName] = input.value;
     });
 
-    action(sprite, inputs);
+    const inner = block.querySelector(".loop-inner");
+    const innerBlocks = inner ? [...inner.children] : [];
+
+    action(sprite, inputs, innerBlocks);
   });
 }
+
+function runScript(scriptId) {
+  const container = getScriptContainer(scriptId);
+  const blocks = [...container.querySelectorAll(":scope > .script-block")];
+
+  const spriteName = document.querySelector(".sprite-item.selected").dataset.sprite;
+  const sprite = scene.getObjectByName(spriteName);
+
+  runBlockList(blocks, sprite);
+}
+
 
 // =========================
 // Run Button
