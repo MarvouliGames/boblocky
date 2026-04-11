@@ -16,7 +16,7 @@ function resizeRendererToDisplaySize(renderer) {
 }
 
 // =========================
- // Scene + Camera
+// Scene + Camera
 // =========================
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x202020);
@@ -92,6 +92,10 @@ function loadCategory(category) {
       input.className = "block-input";
       input.dataset.inputName = name;
       input.type = name === "color" ? "color" : "number";
+
+      // Default hex for color blocks
+      if (name === "color") input.value = "#ff0000";
+
       div.appendChild(input);
     });
 
@@ -185,7 +189,7 @@ document.querySelectorAll(".top-tab").forEach(tab => {
 });
 
 // =========================
-// Scratch‑style Dragging + Snapping + Delete
+// Dragging + Snapping + Delete
 // =========================
 const sidebar = document.getElementById("sidebar");
 
@@ -294,14 +298,14 @@ blocksContainer.addEventListener("mousedown", e => {
   const scriptContainer = getScriptContainer(currentScriptId);
 
   const scriptBlock = block.cloneNode(true);
-  // Fix: ensure color inputs have a default hex value
-scriptBlock.querySelectorAll('input[type="color"]').forEach(input => {
-  if (!input.value) input.value = "#ff0000";
-});
-
   scriptBlock.classList.add("script-block");
   scriptBlock.classList.remove("block");
   scriptBlock.dataset.action = block.dataset.action;
+
+  // Default hex fix for cloned color inputs
+  scriptBlock.querySelectorAll('input[type="color"]').forEach(input => {
+    if (!input.value) input.value = "#ff0000";
+  });
 
   scriptContainer.appendChild(scriptBlock);
 
@@ -320,15 +324,13 @@ scriptBlock.querySelectorAll('input[type="color"]').forEach(input => {
 // =========================
 const actions = {
   changeColor: (sprite, inputs) => {
-  const hex = inputs.color;
+    const hex = inputs.color;
 
-  // Ignore empty or invalid values
-  if (!hex || !/^#([0-9A-F]{3}){1,2}$/i.test(hex)) return;
+    if (!hex || !/^#([0-9A-F]{3}){1,2}$/i.test(hex)) return;
 
-  sprite.material.color.set(hex);
-  sprite.material.needsUpdate = true;
-},
-
+    sprite.material.color.set(hex);
+    sprite.material.needsUpdate = true;
+  },
 
   setSize: (sprite, inputs) => {
     sprite.scale.set(
