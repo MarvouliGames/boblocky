@@ -175,13 +175,19 @@ getScriptContainer("script1");
 setActiveScript("script1");
 
 // =========================
-// Tabs
+// Tabs (Guaranteed Working)
 // =========================
-document.querySelectorAll(".top-tab").forEach(tab => {
+const tabs = document.querySelectorAll(".top-tab");
+
+tabs.forEach(tab => {
   tab.addEventListener("click", () => {
-    document.querySelector(".top-tab.selected").classList.remove("selected");
+
+    // Switch selected tab
+    const current = document.querySelector(".top-tab.selected");
+    if (current) current.classList.remove("selected");
     tab.classList.add("selected");
 
+    // Switch views
     const view = tab.dataset.view;
 
     if (view === "preview") {
@@ -193,6 +199,7 @@ document.querySelectorAll(".top-tab").forEach(tab => {
     }
   });
 });
+
 
 // =========================
 // Dragging + Snapping + Delete
