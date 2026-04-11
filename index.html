@@ -121,19 +121,19 @@
     }
     .top-tab.selected { background: #3a3a3a; }
 
-    /* Run Button */
-    #run-script {
+    /* Run + Stop Buttons */
+    #run-script, #stop-script {
       position: absolute;
       top: 5px;
-      right: 300px;
       z-index: 40;
       padding: 6px 12px;
-      background: #4caf50;
-      color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      color: white;
     }
+    #run-script { right: 300px; background: #4caf50; }
+    #stop-script { right: 220px; background: #d9534f; }
 
     /* Canvas */
     #scene {
@@ -216,8 +216,9 @@
     <div class="top-tab" data-view="scripts">Scripts</div>
   </div>
 
-  <!-- RUN BUTTON -->
+  <!-- RUN + STOP BUTTONS -->
   <button id="run-script">Run</button>
+  <button id="stop-script">Stop</button>
 
   <!-- CANVAS -->
   <canvas id="scene"></canvas>

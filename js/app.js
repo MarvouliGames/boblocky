@@ -1,4 +1,10 @@
 // =========================
+// Global Run State
+// =========================
+let isRunning = false;
+let activeLoopCancels = [];
+
+// =========================
 // Canvas + Renderer
 // =========================
 const canvas = document.getElementById("scene");
@@ -73,7 +79,8 @@ const blockDefinitions = {
   ],
   control: [
     { name: "Repeat", action: "repeat", inputs: ["times"] },
-    { name: "Forever", action: "forever", inputs: [] }
+    { name: "Forever", action: "forever", inputs: [] },
+    { name: "Wait", action: "wait", inputs: ["seconds"] }
   ]
 };
 
@@ -173,7 +180,7 @@ setActiveScript("script1");
 document.querySelectorAll(".top-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelector(".top-tab.selected").classList.remove("selected");
-    tab.classList.add("selected");
+    tab.addEventListener("selected");
 
     const view = tab.dataset.view;
 
@@ -317,7 +324,10 @@ blocksContainer.addEventListener("mousedown", e => {
 // EXECUTION ENGINE
 // =========================
 const actions = {
-  // Loops
+  // =========================
+  // CONTROL BLOCKS
+  // =========================
+
   repeat: (sprite, inputs, index, blocks) => {
     const times = Number(inputs.times) || 1;
 
@@ -333,6 +343,7 @@ const actions = {
     });
 
     for (let i = 0; i < times; i++) {
+      if (!isRunning) return;
       nextAction(sprite, nextInputs, index + 1, blocks);
     }
   },
@@ -349,14 +360,45 @@ const actions = {
       nextInputs[input.dataset.inputName] = input.value;
     });
 
+    let cancelled = false;
+
     function loop() {
+      if (!isRunning || cancelled) return;
+
       nextAction(sprite, nextInputs, index + 1, blocks);
       requestAnimationFrame(loop);
     }
+
     loop();
+
+    activeLoopCancels.push(() => cancelled = true);
   },
 
-  // View
+  wait: (sprite, inputs, index, blocks) => {
+    const seconds = Number(inputs.seconds) || 0;
+
+    setTimeout(() => {
+      if (!isRunning) return;
+
+      const next = blocks[index + 1];
+      if (!next) return;
+
+      const nextAction = actions[next.dataset.action];
+      if (!nextAction) return;
+
+      const nextInputs = {};
+      next.querySelectorAll("input").forEach(input => {
+        nextInputs[input.dataset.inputName] = input.value;
+      });
+
+      nextAction(sprite, nextInputs, index + 1, blocks);
+    }, seconds * 1000);
+  },
+
+  // =========================
+  // VIEW BLOCKS
+  // =========================
+
   setSize: (sprite, inputs) => {
     sprite.scale.set(
       Number(inputs.x) || 1,
@@ -370,7 +412,10 @@ const actions = {
     camera.lookAt(0, 0, 0);
   },
 
-  // Motion
+  // =========================
+  // MOTION BLOCKS
+  // =========================
+
   setPosition: (sprite, inputs) => {
     sprite.position.set(
       Number(inputs.x) || 0,
@@ -392,6 +437,9 @@ const actions = {
   }
 };
 
+// =========================
+// Run Script
+// =========================
 function runScript(scriptId) {
   const container = getScriptContainer(scriptId);
   const blocks = [...container.querySelectorAll(".script-block")];
@@ -400,6 +448,8 @@ function runScript(scriptId) {
   const sprite = scene.getObjectByName(spriteName);
 
   blocks.forEach((block, index) => {
+    if (!isRunning) return;
+
     const actionName = block.dataset.action;
     const action = actions[actionName];
     if (!action) return;
@@ -417,5 +467,23 @@ function runScript(scriptId) {
 // Run Button
 // =========================
 document.getElementById("run-script").addEventListener("click", () => {
+  isRunning = true;
+  activeLoopCancels = [];
   runScript(currentScriptId);
+});
+
+// =========================
+// Stop Button
+// =========================
+document.getElementById("stop-script").addEventListener("click", () => {
+  isRunning = false;
+
+  // Cancel all forever loops
+  activeLoopCancels.forEach(cancel => cancel());
+  activeLoopCancels = [];
+
+  // Reset cube + camera
+  cube.position.set(0, 0, 0);
+  cube.scale.set(1, 1, 1);
+  camera.position.set(0, 0, 5);
 });
