@@ -51,18 +51,19 @@ scene.add(light);
 // =========================
 const blockDefinitions = {
   view: [
-    { name: "Change Color", action: "changeColor" },
-    { name: "Set Size", action: "setSize" },
-    { name: "Reset Camera", action: "resetCamera" }
+    { name: "Change Color", action: "changeColor", inputs: ["color"] },
+    { name: "Set Size", action: "setSize", inputs: ["x", "y", "z"] },
+    { name: "Reset Camera", action: "resetCamera", inputs: [] }
   ],
 
   motion: [
-    { name: "Set Position", action: "setPosition" },
-    { name: "Move X", action: "moveX" },
-    { name: "Move Y", action: "moveY" },
-    { name: "Move Z", action: "moveZ" }
+    { name: "Set Position", action: "setPosition", inputs: ["x", "y", "z"] },
+    { name: "Move X", action: "moveX", inputs: ["amount"] },
+    { name: "Move Y", action: "moveY", inputs: ["amount"] },
+    { name: "Move Z", action: "moveZ", inputs: ["amount"] }
   ]
 };
+
 
 // =========================
 // Animation Loop
@@ -99,11 +100,27 @@ function loadCategory(category) {
   blockDefinitions[category].forEach(block => {
     const div = document.createElement("div");
     div.className = "block";
-    div.textContent = block.name;
     div.dataset.action = block.action;
+
+    // Block title
+    const title = document.createElement("span");
+    title.textContent = block.name;
+    div.appendChild(title);
+
+    // Inputs
+    block.inputs.forEach(inputName => {
+      const input = document.createElement("input");
+      input.type = inputName === "color" ? "color" : "number";
+      input.placeholder = inputName;
+      input.className = "block-input";
+      input.dataset.inputName = inputName;
+      div.appendChild(input);
+    });
+
     blocksContainer.appendChild(div);
   });
 }
+
 
 document.querySelectorAll(".category-tab").forEach(tab => {
   tab.addEventListener("click", () => {
@@ -167,34 +184,40 @@ function makeDraggable(block) {
 blocksContainer.addEventListener("click", e => {
   if (!e.target.classList.contains("block")) return;
 
-  const action = e.target.dataset.action;
+  const block = e.target;
+  const action = block.dataset.action;
   const mesh = scene.getObjectByName(selectedSprite);
-  if (!mesh) return;
 
-  // Add block to script panel
+  // Collect inputs
+  const inputs = {};
+  block.querySelectorAll(".block-input").forEach(input => {
+    const name = input.dataset.inputName;
+    inputs[name] = input.type === "number" ? Number(input.value) : input.value;
+  });
+
+  // Add to script panel
   const scriptBlock = document.createElement("div");
   scriptBlock.className = "script-block";
-  scriptBlock.textContent = e.target.textContent;
+  scriptBlock.textContent = block.textContent;
   scriptArea.appendChild(scriptBlock);
   makeDraggable(scriptBlock);
 
-
-  // Execute block action
-  if (action === "changeColor") {
-    mesh.material.color.set(Math.random() * 0xffffff);
+  // Execute actions
+  if (action === "setPosition") {
+    mesh.position.set(inputs.x || 0, inputs.y || 0, inputs.z || 0);
   }
 
   if (action === "setSize") {
-    mesh.scale.set(2, 2, 2);
+    mesh.scale.set(inputs.x || 1, inputs.y || 1, inputs.z || 1);
   }
 
-  if (action === "setPosition") {
-    mesh.position.set(0, 1, 0);
+  if (action === "changeColor") {
+    mesh.material.color.set(inputs.color || "#ffffff");
   }
 
-  if (action === "moveX") mesh.position.x += 0.5;
-  if (action === "moveY") mesh.position.y += 0.5;
-  if (action === "moveZ") mesh.position.z += 0.5;
+  if (action === "moveX") mesh.position.x += inputs.amount || 0;
+  if (action === "moveY") mesh.position.y += inputs.amount || 0;
+  if (action === "moveZ") mesh.position.z += inputs.amount || 0;
 
   if (action === "resetCamera") {
     camera.position.set(0, 0, 5);
