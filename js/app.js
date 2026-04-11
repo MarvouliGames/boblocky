@@ -294,6 +294,11 @@ blocksContainer.addEventListener("mousedown", e => {
   const scriptContainer = getScriptContainer(currentScriptId);
 
   const scriptBlock = block.cloneNode(true);
+  // Fix: ensure color inputs have a default hex value
+scriptBlock.querySelectorAll('input[type="color"]').forEach(input => {
+  if (!input.value) input.value = "#ff0000";
+});
+
   scriptBlock.classList.add("script-block");
   scriptBlock.classList.remove("block");
   scriptBlock.dataset.action = block.dataset.action;
