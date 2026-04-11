@@ -185,9 +185,107 @@ document.querySelectorAll(".top-tab").forEach(tab => {
 });
 
 // =========================
-// Add Blocks to Script Workspace
+// Scratch‑style Dragging + Snapping + Delete
 // =========================
-blocksContainer.addEventListener("click", e => {
+const sidebar = document.getElementById("sidebar");
+
+function makeDraggable(block) {
+  let offsetX = 0;
+  let offsetY = 0;
+  let isDragging = false;
+
+  block.querySelectorAll("input").forEach(input => {
+    input.addEventListener("mousedown", e => e.stopPropagation());
+  });
+
+  block.addEventListener("mousedown", e => {
+    isDragging = true;
+
+    const rect = block.getBoundingClientRect();
+    const parentRect = block.parentElement.getBoundingClientRect();
+
+    block.style.position = "absolute";
+    block.style.left = rect.left - parentRect.left + "px";
+    block.style.top = rect.top - parentRect.top + "px";
+    block.style.width = "calc(100% - 20px)";
+    block.style.zIndex = 1000;
+
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+  });
+
+  document.addEventListener("mousemove", e => {
+    if (!isDragging) return;
+
+    const parentRect = block.parentElement.getBoundingClientRect();
+    block.style.left = e.pageX - parentRect.left - offsetX + "px";
+    block.style.top = e.pageY - parentRect.top - offsetY + "px";
+
+    const blockRect = block.getBoundingClientRect();
+    const sidebarRect = sidebar.getBoundingClientRect();
+
+    const overlapsSidebar =
+      blockRect.right > sidebarRect.left &&
+      blockRect.left < sidebarRect.right &&
+      blockRect.bottom > sidebarRect.top &&
+      blockRect.top < sidebarRect.bottom;
+
+    block.style.background = overlapsSidebar ? "#802020" : "#2a2a2a";
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (!isDragging) return;
+    isDragging = false;
+
+    const blockRect = block.getBoundingClientRect();
+    const sidebarRect = sidebar.getBoundingClientRect();
+
+    const overlapsSidebar =
+      blockRect.right > sidebarRect.left &&
+      blockRect.left < sidebarRect.right &&
+      blockRect.bottom > sidebarRect.top &&
+      blockRect.top < sidebarRect.bottom;
+
+    if (overlapsSidebar) {
+      block.remove();
+      return;
+    }
+
+    const parent = block.parentElement;
+    const siblings = [...parent.querySelectorAll(".script-block")].filter(b => b !== block);
+
+    let insertBefore = null;
+    const blockCenter = blockRect.top + blockRect.height / 2;
+
+    for (const sib of siblings) {
+      const sibRect = sib.getBoundingClientRect();
+      const sibCenter = sibRect.top + sibRect.height / 2;
+
+      if (blockCenter < sibCenter) {
+        insertBefore = sib;
+        break;
+      }
+    }
+
+    block.style.position = "relative";
+    block.style.left = "0px";
+    block.style.top = "0px";
+    block.style.width = "auto";
+    block.style.zIndex = 1;
+    block.style.background = "#2a2a2a";
+
+    if (insertBefore) {
+      parent.insertBefore(block, insertBefore);
+    } else {
+      parent.appendChild(block);
+    }
+  });
+}
+
+// =========================
+// Drag blocks FROM sidebar (Scratch style)
+// =========================
+blocksContainer.addEventListener("mousedown", e => {
   const block = e.target.closest(".block");
   if (!block) return;
 
@@ -198,4 +296,12 @@ blocksContainer.addEventListener("click", e => {
   scriptBlock.classList.remove("block");
 
   scriptContainer.appendChild(scriptBlock);
+
+  makeDraggable(scriptBlock);
+
+  const evt = new MouseEvent("mousedown", {
+    clientX: e.clientX,
+    clientY: e.clientY
+  });
+  scriptBlock.dispatchEvent(evt);
 });
