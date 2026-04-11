@@ -16,7 +16,7 @@
       font-family: sans-serif;
     }
 
-    /* Sidebar */
+    /* Sidebar (left) */
     #sidebar {
       position: absolute;
       top: 0;
@@ -29,11 +29,7 @@
       box-sizing: border-box;
       border-right: 2px solid #333;
       overflow-y: auto;
-      z-index: 10;
-    }
-
-    #sprite-selector {
-      margin-bottom: 10px;
+      z-index: 20;
     }
 
     .sprite-item {
@@ -43,32 +39,20 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
-    .sprite-item.selected {
-      background: #3a3a3a;
-    }
+    .sprite-item.selected { background: #3a3a3a; }
 
     #categories {
       display: flex;
       gap: 10px;
       margin-bottom: 10px;
     }
-
     .category-tab {
       padding: 8px 12px;
       background: #2a2a2a;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
     }
-
-    .category-tab.selected {
-      background: #3a3a3a;
-    }
-
-    #blocks-container {
-      margin-top: 10px;
-    }
+    .category-tab.selected { background: #3a3a3a; }
 
     .block {
       display: flex;
@@ -79,14 +63,7 @@
       margin-bottom: 6px;
       border-radius: 4px;
       cursor: pointer;
-      transition: background 0.15s;
-      font-size: 13px;
     }
-
-    .block:hover {
-      background: #3a3a3a;
-    }
-
     .block-input {
       width: 50px;
       background: #444;
@@ -94,16 +71,9 @@
       color: white;
       padding: 4px;
       border-radius: 4px;
-      font-size: 12px;
     }
 
-    .block-input[type="color"] {
-      width: 40px;
-      height: 22px;
-      padding: 0;
-    }
-
-    /* Explorer on right */
+    /* Explorer (right) */
     #explorer {
       position: absolute;
       top: 0;
@@ -116,26 +86,7 @@
       border-left: 2px solid #333;
       box-sizing: border-box;
       overflow-y: auto;
-      z-index: 10;
-    }
-
-    #explorer-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-      font-size: 14px;
-    }
-
-    #explorer-header button {
-      background: #2a2a2a;
-      border: none;
-      color: #eee;
-      border-radius: 4px;
-      cursor: pointer;
-      width: 22px;
-      height: 22px;
-      padding: 0;
+      z-index: 20;
     }
 
     .script-item {
@@ -144,14 +95,10 @@
       margin-bottom: 4px;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 13px;
     }
+    .script-item.selected { background: #3a3a3a; }
 
-    .script-item.selected {
-      background: #3a3a3a;
-    }
-
-    /* Top tabs */
+    /* Tabs */
     #top-tabs {
       position: absolute;
       top: 0;
@@ -161,23 +108,18 @@
       align-items: center;
       gap: 8px;
       padding: 0 10px;
-      z-index: 20;
+      z-index: 30;
     }
-
     .top-tab {
       padding: 6px 12px;
       background: #2a2a2a;
       color: #eee;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
     }
+    .top-tab.selected { background: #3a3a3a; }
 
-    .top-tab.selected {
-      background: #3a3a3a;
-    }
-
-    /* Canvas */
+    /* Canvas (Preview mode) */
     #scene {
       position: absolute;
       top: 40px;
@@ -185,13 +127,10 @@
       width: calc(100vw - 520px);
       height: calc(100vh - 40px);
       display: block;
+      z-index: 1; /* behind UI */
     }
 
-    #scene.fullscreen {
-      width: calc(100vw - 260px);
-    }
-
-    /* Script workspace */
+    /* Script Workspace (Scripts mode) */
     #script-workspace {
       position: absolute;
       top: 40px;
@@ -199,44 +138,37 @@
       width: calc(100vw - 520px);
       height: calc(100vh - 40px);
       background: #181818;
-      overflow: visible;          /* 👈 allow blocks to leave the area */
+      overflow-y: auto;
       padding: 10px;
-      display: none;
       box-sizing: border-box;
-      z-index: 20;                /* 👈 above sidebar/explorer */
+      display: none;
+      z-index: 10;
     }
 
-
     .script-container {
-      position: relative;
-      min-height: 200px;
-      margin-bottom: 20px;
       border: 1px dashed #444;
       border-radius: 4px;
       padding: 10px;
+      min-height: 200px;
+      margin-bottom: 20px;
     }
 
     .script-block {
-      display: flex;
-      align-items: center;
-      gap: 6px;
       background: #2a2a2a;
       padding: 8px;
       border-radius: 4px;
-      cursor: grab;
-      position: relative; /* important for snapping */
       margin: 4px 0;
-      font-size: 13px;
-    }
-
-    .script-block:active {
-      cursor: grabbing;
+      display: flex;
+      gap: 6px;
+      cursor: grab;
+      position: relative;
     }
   </style>
 </head>
 
 <body>
 
+  <!-- LEFT SIDEBAR -->
   <div id="sidebar">
     <div id="sprite-selector">
       <div class="sprite-item selected" data-sprite="cube1">Cube 1</div>
@@ -250,6 +182,7 @@
     <div id="blocks-container"></div>
   </div>
 
+  <!-- RIGHT EXPLORER -->
   <div id="explorer">
     <div id="explorer-header">
       <span>Scripts</span>
@@ -260,18 +193,22 @@
     </div>
   </div>
 
+  <!-- TOP TABS -->
   <div id="top-tabs">
     <div class="top-tab selected" data-view="preview">Preview</div>
     <div class="top-tab" data-view="scripts">Scripts</div>
   </div>
 
+  <!-- CANVAS -->
   <canvas id="scene"></canvas>
 
+  <!-- SCRIPT WORKSPACE -->
   <div id="script-workspace">
     <div class="script-container" data-script-id="script1"></div>
   </div>
 
   <script src="js/three.min.js"></script>
   <script src="js/app.js"></script>
+
 </body>
 </html>
