@@ -315,10 +315,15 @@ blocksContainer.addEventListener("mousedown", e => {
 // =========================
 const actions = {
   changeColor: (sprite, inputs) => {
-    if (!sprite || !inputs.color) return;
-    sprite.material.color.set(inputs.color);
-    sprite.material.needsUpdate = true;
-  },
+  const hex = inputs.color;
+
+  // Ignore empty or invalid values
+  if (!hex || !/^#([0-9A-F]{3}){1,2}$/i.test(hex)) return;
+
+  sprite.material.color.set(hex);
+  sprite.material.needsUpdate = true;
+},
+
 
   setSize: (sprite, inputs) => {
     sprite.scale.set(
