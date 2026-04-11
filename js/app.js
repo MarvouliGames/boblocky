@@ -180,7 +180,7 @@ setActiveScript("script1");
 document.querySelectorAll(".top-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelector(".top-tab.selected").classList.remove("selected");
-    tab.addEventListener("selected");
+    tab.classList.add("selected");
 
     const view = tab.dataset.view;
 
