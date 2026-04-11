@@ -93,7 +93,6 @@ window.addEventListener("resize", () => {
 // Sidebar Category Loading
 // =========================
 const blocksContainer = document.getElementById("blocks-container");
-
 function loadCategory(category) {
   blocksContainer.innerHTML = "";
 
@@ -135,6 +134,33 @@ document.querySelectorAll(".sprite-item").forEach(item => {
 // =========================
 const scriptArea = document.getElementById("script-scroll");
 
+function makeDraggable(block) {
+  let offsetX = 0;
+  let offsetY = 0;
+  let isDragging = false;
+
+  block.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    block.style.position = "absolute";
+    block.style.zIndex = 1000;
+
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+
+    block.style.left = e.pageX - offsetX + "px";
+    block.style.top = e.pageY - offsetY + "px";
+  });
+
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+  });
+}
+
+
 // =========================
 // Block Click Actions
 // =========================
@@ -150,6 +176,8 @@ blocksContainer.addEventListener("click", e => {
   scriptBlock.className = "script-block";
   scriptBlock.textContent = e.target.textContent;
   scriptArea.appendChild(scriptBlock);
+  makeDraggable(scriptBlock);
+
 
   // Execute block action
   if (action === "changeColor") {
@@ -173,4 +201,6 @@ blocksContainer.addEventListener("click", e => {
     camera.lookAt(0, 0, 0);
   }
 });
+
+
 
