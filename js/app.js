@@ -61,11 +61,6 @@ animate();
 // Sidebar Blocks
 // =========================
 const blockDefinitions = {
-  control: [
-    { name: "Repeat", action: "repeat", inputs: ["times"] },
-    { name: "Forever", action: "forever", inputs: [] }
-  ],
-
   view: [
     { name: "Set Size", action: "setSize", inputs: ["x", "y", "z"] },
     { name: "Reset Camera", action: "resetCamera", inputs: [] }
@@ -75,6 +70,10 @@ const blockDefinitions = {
     { name: "Move X", action: "moveX", inputs: ["amount"] },
     { name: "Move Y", action: "moveY", inputs: ["amount"] },
     { name: "Move Z", action: "moveZ", inputs: ["amount"] }
+  ],
+  control: [
+    { name: "Repeat", action: "repeat", inputs: ["times"] },
+    { name: "Forever", action: "forever", inputs: [] }
   ]
 };
 
@@ -95,24 +94,8 @@ function loadCategory(category) {
       const input = document.createElement("input");
       input.className = "block-input";
       input.dataset.inputName = name;
-      input.type = name === "color" ? "color" : "number";
-
-      // Default hex for color blocks
-      if (name === "color") input.value = "#00ff00";
-
+      input.type = "number";
       div.appendChild(input);
-      if (block.action === "repeat" || block.action === "forever") {
-      div.classList.add("loop-block");
-
-      const inner = document.createElement("div");
-      inner.className = "loop-inner";
-      inner.style.marginLeft = "20px";
-      inner.style.borderLeft = "2px solid #555";
-      inner.style.paddingLeft = "10px";
-
-      div.appendChild(inner);
-}
-
     });
 
     blocksContainer.appendChild(div);
@@ -185,7 +168,7 @@ getScriptContainer("script1");
 setActiveScript("script1");
 
 // =========================
-// Tabs: Preview vs Scripts
+// Tabs
 // =========================
 document.querySelectorAll(".top-tab").forEach(tab => {
   tab.addEventListener("click", () => {
@@ -271,21 +254,7 @@ function makeDraggable(block) {
       return;
     }
 
-    let parent = block.parentElement;
-
-// If dropped inside a loop-inner, use that as parent
-document.querySelectorAll(".loop-inner").forEach(inner => {
-  const rect = inner.getBoundingClientRect();
-  if (
-    e.pageX > rect.left &&
-    e.pageX < rect.right &&
-    e.pageY > rect.top &&
-    e.pageY < rect.bottom
-  ) {
-    parent = inner;
-  }
-});
-
+    const parent = block.parentElement;
     const siblings = [...parent.querySelectorAll(".script-block")].filter(b => b !== block);
 
     let insertBefore = null;
@@ -332,13 +301,6 @@ blocksContainer.addEventListener("mousedown", e => {
   scriptBlock.classList.remove("block");
   scriptBlock.dataset.action = block.dataset.action;
 
-  // Preserve the current input values from the sidebar block,
-  // including color picker state.
-  block.querySelectorAll("input").forEach((input, index) => {
-    const cloneInput = scriptBlock.querySelectorAll("input")[index];
-    if (cloneInput) cloneInput.value = input.value;
-  });
-
   scriptContainer.appendChild(scriptBlock);
 
   makeDraggable(scriptBlock);
@@ -355,15 +317,46 @@ blocksContainer.addEventListener("mousedown", e => {
 // EXECUTION ENGINE
 // =========================
 const actions = {
-  changeColor: (sprite, inputs) => {
-    const hex = inputs.color;
+  // Loops
+  repeat: (sprite, inputs, index, blocks) => {
+    const times = Number(inputs.times) || 1;
 
-    if (!hex || !/^#([0-9A-F]{3}){1,2}$/i.test(hex)) return;
+    const next = blocks[index + 1];
+    if (!next) return;
 
-    sprite.material.color.set(hex);
-    sprite.material.needsUpdate = true;
+    const nextAction = actions[next.dataset.action];
+    if (!nextAction) return;
+
+    const nextInputs = {};
+    next.querySelectorAll("input").forEach(input => {
+      nextInputs[input.dataset.inputName] = input.value;
+    });
+
+    for (let i = 0; i < times; i++) {
+      nextAction(sprite, nextInputs, index + 1, blocks);
+    }
   },
 
+  forever: (sprite, inputs, index, blocks) => {
+    const next = blocks[index + 1];
+    if (!next) return;
+
+    const nextAction = actions[next.dataset.action];
+    if (!nextAction) return;
+
+    const nextInputs = {};
+    next.querySelectorAll("input").forEach(input => {
+      nextInputs[input.dataset.inputName] = input.value;
+    });
+
+    function loop() {
+      nextAction(sprite, nextInputs, index + 1, blocks);
+      requestAnimationFrame(loop);
+    }
+    loop();
+  },
+
+  // View
   setSize: (sprite, inputs) => {
     sprite.scale.set(
       Number(inputs.x) || 1,
@@ -377,6 +370,7 @@ const actions = {
     camera.lookAt(0, 0, 0);
   },
 
+  // Motion
   setPosition: (sprite, inputs) => {
     sprite.position.set(
       Number(inputs.x) || 0,
@@ -395,52 +389,29 @@ const actions = {
 
   moveZ: (sprite, inputs) => {
     sprite.position.z += Number(inputs.amount) || 0;
-  },
-  repeat: (sprite, inputs, innerBlocks) => {
-  const times = Number(inputs.times) || 1;
-  for (let i = 0; i < times; i++) {
-    runBlockList(innerBlocks, sprite);
   }
-},
-
-forever: (sprite, inputs, innerBlocks) => {
-  function loop() {
-    runBlockList(innerBlocks, sprite);
-    requestAnimationFrame(loop);
-  }
-  loop();
-}
-
 };
 
-function runBlockList(blocks, sprite) {
-  blocks.forEach(block => {
+function runScript(scriptId) {
+  const container = getScriptContainer(scriptId);
+  const blocks = [...container.querySelectorAll(".script-block")];
+
+  const spriteName = document.querySelector(".sprite-item.selected").dataset.sprite;
+  const sprite = scene.getObjectByName(spriteName);
+
+  blocks.forEach((block, index) => {
     const actionName = block.dataset.action;
     const action = actions[actionName];
     if (!action) return;
 
     const inputs = {};
-    block.querySelectorAll(":scope > input").forEach(input => {
+    block.querySelectorAll("input").forEach(input => {
       inputs[input.dataset.inputName] = input.value;
     });
 
-    const inner = block.querySelector(".loop-inner");
-    const innerBlocks = inner ? [...inner.children] : [];
-
-    action(sprite, inputs, innerBlocks);
+    action(sprite, inputs, index, blocks);
   });
 }
-
-function runScript(scriptId) {
-  const container = getScriptContainer(scriptId);
-  const blocks = [...container.querySelectorAll(":scope > .script-block")];
-
-  const spriteName = document.querySelector(".sprite-item.selected").dataset.sprite;
-  const sprite = scene.getObjectByName(spriteName);
-
-  runBlockList(blocks, sprite);
-}
-
 
 // =========================
 // Run Button
