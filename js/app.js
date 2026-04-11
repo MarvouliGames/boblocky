@@ -177,9 +177,11 @@ document.querySelectorAll(".top-tab").forEach(tab => {
     if (view === "preview") {
       canvas.style.display = "block";
       scriptWorkspace.style.display = "none";
+      document.getElementById("run-script").style.display = "none";
     } else {
       canvas.style.display = "none";
       scriptWorkspace.style.display = "block";
+      document.getElementById("run-script").style.display = "block";
     }
   });
 });
@@ -210,7 +212,6 @@ function makeDraggable(block) {
     block.style.width = "calc(100% - 20px)";
     block.style.zIndex = 1000;
 
-    // FIX: centered dragging
     offsetX = e.pageX - rect.left;
     offsetY = e.pageY - rect.top;
   });
@@ -297,6 +298,7 @@ blocksContainer.addEventListener("mousedown", e => {
   const scriptBlock = block.cloneNode(true);
   scriptBlock.classList.add("script-block");
   scriptBlock.classList.remove("block");
+  scriptBlock.dataset.action = block.dataset.action;
 
   scriptContainer.appendChild(scriptBlock);
 
@@ -313,11 +315,10 @@ blocksContainer.addEventListener("mousedown", e => {
 // =========================
 // EXECUTION ENGINE
 // =========================
-
-// Map block actions to functions
 const actions = {
   changeColor: (sprite, inputs) => {
-    sprite.material.color.set(inputs.color || "#ffffff");
+    if (!inputs.color) return;
+    sprite.material.color = new THREE.Color(inputs.color);
   },
 
   setSize: (sprite, inputs) => {
@@ -354,7 +355,6 @@ const actions = {
   }
 };
 
-// Run the current script
 function runScript(scriptId) {
   const container = getScriptContainer(scriptId);
   const blocks = [...container.querySelectorAll(".script-block")];
@@ -365,7 +365,6 @@ function runScript(scriptId) {
   blocks.forEach(block => {
     const actionName = block.dataset.action;
     const action = actions[actionName];
-
     if (!action) return;
 
     const inputs = {};
@@ -377,6 +376,9 @@ function runScript(scriptId) {
   });
 }
 
+// =========================
+// Run Button
+// =========================
 document.getElementById("run-script").addEventListener("click", () => {
   runScript(currentScriptId);
 });
