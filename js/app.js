@@ -16,7 +16,7 @@ function resizeRendererToDisplaySize(renderer) {
 }
 
 // =========================
-// Scene + Camera
+ // Scene + Camera
 // =========================
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x202020);
@@ -283,7 +283,7 @@ function makeDraggable(block) {
 }
 
 // =========================
-// Drag blocks FROM sidebar (Scratch style)
+// Drag blocks FROM sidebar
 // =========================
 blocksContainer.addEventListener("mousedown", e => {
   const block = e.target.closest(".block");
