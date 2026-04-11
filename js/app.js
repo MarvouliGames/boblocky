@@ -285,26 +285,21 @@ function makeDraggable(block) {
 // =========================
 // Drag blocks FROM sidebar (Scratch style)
 // =========================
-blocksContainer.addEventListener("mousedown", e => {
-  const block = e.target.closest(".block");
-  if (!block) return;
+block.addEventListener("mousedown", e => {
+  isDragging = true;
 
-  e.preventDefault();
+  const rect = block.getBoundingClientRect();
 
-  const scriptContainer = getScriptContainer(currentScriptId);
+  // Store the distance between mouse and block top-left
+  offsetX = e.pageX - rect.left;
+  offsetY = e.pageY - rect.top;
 
-  const scriptBlock = block.cloneNode(true);
-  scriptBlock.classList.add("script-block");
-  scriptBlock.classList.remove("block");
-
-  scriptContainer.appendChild(scriptBlock);
-
-  makeDraggable(scriptBlock);
-
-  const evt = new MouseEvent("mousedown", {
-    clientX: e.clientX,
-    clientY: e.clientY,
-    bubbles: true
-  });
-  scriptBlock.dispatchEvent(evt);
+  // Switch to absolute positioning
+  const parentRect = block.parentElement.getBoundingClientRect();
+  block.style.position = "absolute";
+  block.style.left = rect.left - parentRect.left + "px";
+  block.style.top = rect.top - parentRect.top + "px";
+  block.style.width = "calc(100% - 20px)";
+  block.style.zIndex = 1000;
 });
+
