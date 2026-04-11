@@ -177,11 +177,9 @@ document.querySelectorAll(".top-tab").forEach(tab => {
     if (view === "preview") {
       canvas.style.display = "block";
       scriptWorkspace.style.display = "none";
-      document.getElementById("run-script").style.display = "none";
     } else {
       canvas.style.display = "none";
       scriptWorkspace.style.display = "block";
-      document.getElementById("run-script").style.display = "block";
     }
   });
 });
@@ -317,8 +315,9 @@ blocksContainer.addEventListener("mousedown", e => {
 // =========================
 const actions = {
   changeColor: (sprite, inputs) => {
-    if (!inputs.color) return;
-    sprite.material.color = new THREE.Color(inputs.color);
+    if (!sprite || !inputs.color) return;
+    sprite.material.color.set(inputs.color);
+    sprite.material.needsUpdate = true;
   },
 
   setSize: (sprite, inputs) => {
