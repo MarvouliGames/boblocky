@@ -450,20 +450,20 @@ function runScript(scriptId) {
   const spriteName = document.querySelector(".sprite-item.selected").dataset.sprite;
   const sprite = scene.getObjectByName(spriteName);
 
-  blocks.forEach((block, index) => {
-    if (!isRunning) return;
+  // Run only the FIRST block — loops handle the rest
+  if (blocks.length === 0) return;
 
-    const actionName = block.dataset.action;
-    const action = actions[actionName];
-    if (!action) return;
+  const block = blocks[0];
+  const actionName = block.dataset.action;
+  const action = actions[actionName];
+  if (!action) return;
 
-    const inputs = {};
-    block.querySelectorAll("input").forEach(input => {
-      inputs[input.dataset.inputName] = input.value;
-    });
-
-    action(sprite, inputs, index, blocks);
+  const inputs = {};
+  block.querySelectorAll("input").forEach(input => {
+    inputs[input.dataset.inputName] = input.value;
   });
+
+  action(sprite, inputs, 0, blocks);
 }
 
 // =========================
