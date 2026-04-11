@@ -210,8 +210,9 @@ function makeDraggable(block) {
     block.style.width = "calc(100% - 20px)";
     block.style.zIndex = 1000;
 
-    offsetX = e.offsetX;
-    offsetY = e.offsetY;
+    // FIX: centered dragging
+    offsetX = e.pageX - rect.left;
+    offsetY = e.pageY - rect.top;
   });
 
   document.addEventListener("mousemove", e => {
@@ -285,21 +286,26 @@ function makeDraggable(block) {
 // =========================
 // Drag blocks FROM sidebar (Scratch style)
 // =========================
-block.addEventListener("mousedown", e => {
-  isDragging = true;
+blocksContainer.addEventListener("mousedown", e => {
+  const block = e.target.closest(".block");
+  if (!block) return;
 
-  const rect = block.getBoundingClientRect();
+  e.preventDefault();
 
-  // Store the distance between mouse and block top-left
-  offsetX = e.pageX - rect.left;
-  offsetY = e.pageY - rect.top;
+  const scriptContainer = getScriptContainer(currentScriptId);
 
-  // Switch to absolute positioning
-  const parentRect = block.parentElement.getBoundingClientRect();
-  block.style.position = "absolute";
-  block.style.left = rect.left - parentRect.left + "px";
-  block.style.top = rect.top - parentRect.top + "px";
-  block.style.width = "calc(100% - 20px)";
-  block.style.zIndex = 1000;
+  const scriptBlock = block.cloneNode(true);
+  scriptBlock.classList.add("script-block");
+  scriptBlock.classList.remove("block");
+
+  scriptContainer.appendChild(scriptBlock);
+
+  makeDraggable(scriptBlock);
+
+  const evt = new MouseEvent("mousedown", {
+    clientX: e.clientX,
+    clientY: e.clientY,
+    bubbles: true
+  });
+  scriptBlock.dispatchEvent(evt);
 });
-
