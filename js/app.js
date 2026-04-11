@@ -309,3 +309,74 @@ blocksContainer.addEventListener("mousedown", e => {
   });
   scriptBlock.dispatchEvent(evt);
 });
+
+// =========================
+// EXECUTION ENGINE
+// =========================
+
+// Map block actions to functions
+const actions = {
+  changeColor: (sprite, inputs) => {
+    sprite.material.color.set(inputs.color || "#ffffff");
+  },
+
+  setSize: (sprite, inputs) => {
+    sprite.scale.set(
+      Number(inputs.x) || 1,
+      Number(inputs.y) || 1,
+      Number(inputs.z) || 1
+    );
+  },
+
+  resetCamera: () => {
+    camera.position.set(0, 0, 5);
+    camera.lookAt(0, 0, 0);
+  },
+
+  setPosition: (sprite, inputs) => {
+    sprite.position.set(
+      Number(inputs.x) || 0,
+      Number(inputs.y) || 0,
+      Number(inputs.z) || 0
+    );
+  },
+
+  moveX: (sprite, inputs) => {
+    sprite.position.x += Number(inputs.amount) || 0;
+  },
+
+  moveY: (sprite, inputs) => {
+    sprite.position.y += Number(inputs.amount) || 0;
+  },
+
+  moveZ: (sprite, inputs) => {
+    sprite.position.z += Number(inputs.amount) || 0;
+  }
+};
+
+// Run the current script
+function runScript(scriptId) {
+  const container = getScriptContainer(scriptId);
+  const blocks = [...container.querySelectorAll(".script-block")];
+
+  const spriteName = document.querySelector(".sprite-item.selected").dataset.sprite;
+  const sprite = scene.getObjectByName(spriteName);
+
+  blocks.forEach(block => {
+    const actionName = block.dataset.action;
+    const action = actions[actionName];
+
+    if (!action) return;
+
+    const inputs = {};
+    block.querySelectorAll("input").forEach(input => {
+      inputs[input.dataset.inputName] = input.value;
+    });
+
+    action(sprite, inputs);
+  });
+}
+
+document.getElementById("run-script").addEventListener("click", () => {
+  runScript(currentScriptId);
+});
