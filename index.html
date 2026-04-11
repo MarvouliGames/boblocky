@@ -115,12 +115,41 @@
   position: relative;
 }
 
+#script-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 260px;
+  height: 100vh;
+  background: #1a1a1a;
+  color: white;
+  padding: 15px;
+  box-sizing: border-box;
+  border-left: 2px solid #333;
+  overflow: hidden;
+  z-index: 10;
+}
+
+#script-scroll {
+  height: calc(100vh - 50px);
+  overflow-y: auto;
+  padding-right: 10px;
+  position: relative; /* ⭐ required for drag positioning */
+}
+
+.script-block {
+  background: #2a2a2a;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  cursor: grab;
+  position: relative;
+}
+
 .script-block:active {
   cursor: grabbing;
 }
-#script-scroll {
-  position: relative;
-}
+
 
 </style>
 
@@ -145,6 +174,14 @@
 </div>
 
 <canvas id="scene"></canvas>
+
+<div id="script-panel">
+  <h2>Scripts</h2>
+  <div id="script-scroll">
+    <!-- Draggable script blocks will appear here -->
+  </div>
+</div>
+
 
 <script src="js/three.min.js"></script>
 <script src="js/app.js"></script>
