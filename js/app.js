@@ -175,7 +175,7 @@ getScriptContainer("script1");
 setActiveScript("script1");
 
 // =========================
-// Tabs (fixed)
+// Tabs
 // =========================
 document.querySelectorAll(".top-tab").forEach(tab => {
   tab.addEventListener("click", () => {
@@ -323,6 +323,40 @@ blocksContainer.addEventListener("mousedown", e => {
 // =========================
 // EXECUTION ENGINE
 // =========================
+
+// Helper: run a sequence of blocks starting at index
+function runSequence(sprite, blocks, startIndex, onDone) {
+  if (!isRunning) return;
+
+  if (startIndex >= blocks.length) {
+    if (onDone) onDone();
+    return;
+  }
+
+  const block = blocks[startIndex];
+  const actionName = block.dataset.action;
+  const action = actions[actionName];
+
+  if (!action) {
+    runSequence(sprite, blocks, startIndex + 1, onDone);
+    return;
+  }
+
+  const inputs = {};
+  block.querySelectorAll("input").forEach(input => {
+    inputs[input.dataset.inputName] = input.value;
+  });
+
+  if (actionName === "wait") {
+    action(sprite, inputs, startIndex, blocks, () => {
+      runSequence(sprite, blocks, startIndex + 1, onDone);
+    });
+  } else {
+    action(sprite, inputs, startIndex, blocks);
+    runSequence(sprite, blocks, startIndex + 1, onDone);
+  }
+}
+
 const actions = {
 
   // =========================
@@ -331,7 +365,6 @@ const actions = {
 
   wait: (sprite, inputs, index, blocks, resume) => {
     const seconds = Number(inputs.seconds) || 0;
-
     setTimeout(() => {
       if (!isRunning) return;
       resume();
@@ -341,60 +374,30 @@ const actions = {
   repeat: (sprite, inputs, index, blocks) => {
     let times = Number(inputs.times) || 1;
 
-    function runNext() {
+    function loop() {
       if (!isRunning || times <= 0) return;
-
-      const next = blocks[index + 1];
-      if (!next) return;
-
-      const nextAction = actions[next.dataset.action];
-      if (!nextAction) return;
-
-      const nextInputs = {};
-      next.querySelectorAll("input").forEach(input => {
-        nextInputs[input.dataset.inputName] = input.value;
-      });
-
       times--;
 
-      if (next.dataset.action === "wait") {
-        nextAction(sprite, nextInputs, index + 1, blocks, runNext);
-      } else {
-        nextAction(sprite, nextInputs, index + 1, blocks);
-        runNext();
-      }
+      runSequence(sprite, blocks, index + 1, () => {
+        loop();
+      });
     }
 
-    runNext();
+    loop();
   },
 
   forever: (sprite, inputs, index, blocks) => {
     let cancelled = false;
 
-    function runNext() {
+    function loop() {
       if (!isRunning || cancelled) return;
 
-      const next = blocks[index + 1];
-      if (!next) return;
-
-      const nextAction = actions[next.dataset.action];
-      if (!nextAction) return;
-
-      const nextInputs = {};
-      next.querySelectorAll("input").forEach(input => {
-        nextInputs[input.dataset.inputName] = input.value;
+      runSequence(sprite, blocks, index + 1, () => {
+        requestAnimationFrame(loop);
       });
-
-      if (next.dataset.action === "wait") {
-        nextAction(sprite, nextInputs, index + 1, blocks, runNext);
-      } else {
-        nextAction(sprite, nextInputs, index + 1, blocks);
-        requestAnimationFrame(runNext);
-      }
     }
 
-    runNext();
-
+    loop();
     activeLoopCancels.push(() => cancelled = true);
   },
 
@@ -450,20 +453,9 @@ function runScript(scriptId) {
   const spriteName = document.querySelector(".sprite-item.selected").dataset.sprite;
   const sprite = scene.getObjectByName(spriteName);
 
-  // Run only the FIRST block — loops handle the rest
   if (blocks.length === 0) return;
 
-  const block = blocks[0];
-  const actionName = block.dataset.action;
-  const action = actions[actionName];
-  if (!action) return;
-
-  const inputs = {};
-  block.querySelectorAll("input").forEach(input => {
-    inputs[input.dataset.inputName] = input.value;
-  });
-
-  action(sprite, inputs, 0, blocks);
+  runSequence(sprite, blocks, 0);
 }
 
 // =========================
