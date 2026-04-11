@@ -198,11 +198,14 @@ setActiveScript("script1");
 // =========================
 const sidebar = document.getElementById("sidebar");
 
+const sidebar = document.getElementById("sidebar");
+
 function makeDraggable(block) {
   let offsetX = 0;
   let offsetY = 0;
   let isDragging = false;
 
+  // Don’t start drag when editing inputs
   block.querySelectorAll("input").forEach(input => {
     input.addEventListener("mousedown", e => e.stopPropagation());
   });
@@ -230,6 +233,7 @@ function makeDraggable(block) {
     block.style.left = e.pageX - parentRect.left - offsetX + "px";
     block.style.top = e.pageY - parentRect.top - offsetY + "px";
 
+    // Highlight when over sidebar
     const blockRect = block.getBoundingClientRect();
     const sidebarRect = sidebar.getBoundingClientRect();
 
@@ -255,11 +259,13 @@ function makeDraggable(block) {
       blockRect.bottom > sidebarRect.top &&
       blockRect.top < sidebarRect.bottom;
 
+    // 1) Delete if dropped over sidebar
     if (overlapsSidebar) {
       block.remove();
       return;
     }
 
+    // 2) Snap vertically inside parent
     const parent = block.parentElement;
     const siblings = [...parent.querySelectorAll(".script-block")].filter(b => b !== block);
 
@@ -275,11 +281,13 @@ function makeDraggable(block) {
       }
     }
 
+    // Return to normal flow
     block.style.position = "relative";
     block.style.left = "0px";
     block.style.top = "0px";
     block.style.zIndex = "1";
     block.style.background = "#2a2a2a";
+    block.style.width = "auto";
 
     if (insertBefore) {
       parent.insertBefore(block, insertBefore);
@@ -288,6 +296,7 @@ function makeDraggable(block) {
     }
   });
 }
+
 
 // =========================
 // Sidebar Block → Script Block

@@ -199,11 +199,13 @@
       width: calc(100vw - 520px);
       height: calc(100vh - 40px);
       background: #181818;
-      overflow-y: auto;
+      overflow: visible;          /* 👈 allow blocks to leave the area */
       padding: 10px;
       display: none;
       box-sizing: border-box;
+      z-index: 20;                /* 👈 above sidebar/explorer */
     }
+
 
     .script-container {
       position: relative;
