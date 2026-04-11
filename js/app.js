@@ -289,6 +289,8 @@ blocksContainer.addEventListener("mousedown", e => {
   const block = e.target.closest(".block");
   if (!block) return;
 
+  e.preventDefault();
+
   const scriptContainer = getScriptContainer(currentScriptId);
 
   const scriptBlock = block.cloneNode(true);
@@ -301,7 +303,8 @@ blocksContainer.addEventListener("mousedown", e => {
 
   const evt = new MouseEvent("mousedown", {
     clientX: e.clientX,
-    clientY: e.clientY
+    clientY: e.clientY,
+    bubbles: true
   });
   scriptBlock.dispatchEvent(evt);
 });
